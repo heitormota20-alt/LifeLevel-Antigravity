@@ -2311,21 +2311,26 @@ export default function App() {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-3">
-                                        <label className="font-pixel text-[10px] text-dim block uppercase">Categoria do Dashboard</label>
-                                        <div className="grid grid-cols-4 gap-2">
-                                            {['HÁBITOS', 'TAREFAS', 'HIGIENE', 'DIETA'].map(cat => (
+                                    <div className="space-y-4 pt-2">
+                                        <label className="font-pixel text-[6px] text-dim uppercase">Categoria da Missão</label>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {[
+                                                { id: 'HÁBITOS', label: 'HÁBITOS', color: 'text-violet', border: 'border-violet/50' },
+                                                { id: 'TAREFAS', label: 'TAREFAS', color: 'text-blue', border: 'border-blue/50' },
+                                                { id: 'HIGIENE', label: 'HIGIENE', color: 'text-green-400', border: 'border-green-400/50' },
+                                                { id: 'DIETA', label: 'DIETA', color: 'text-orange', border: 'border-orange/50' }
+                                            ].map(cat => (
                                                 <button
-                                                    key={cat}
+                                                    key={cat.id}
                                                     type="button"
                                                     onClick={() => setNewQuestData(prev => ({
                                                         ...prev,
-                                                        category: cat,
-                                                        isRecurring: cat !== 'TAREFAS' // Suggest recurring for non-tasks
+                                                        category: cat.id,
+                                                        isRecurring: cat.id !== 'TAREFAS'
                                                     }))}
-                                                    className={`py-3 font-pixel text-[5px] rounded-xl border transition-all ${newQuestData.category === cat ? 'bg-blue border-blue text-white' : 'bg-surface/50 border-white/10 text-dim'}`}
+                                                    className={`px-4 py-3 rounded-xl font-pixel text-[7px] border flex items-center justify-center gap-2 transition-all ${newQuestData.category === cat.id ? `bg-surface/80 ${cat.border} ${cat.color} shadow-[0_0_15px_rgba(255,255,255,0.05)]` : 'bg-[#161b22] border-transparent text-dim hover:border-white/10'}`}
                                                 >
-                                                    {cat}
+                                                    {cat.label}
                                                 </button>
                                             ))}
                                         </div>
