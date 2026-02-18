@@ -1654,3 +1654,17 @@ input[type="range"]::-moz-range-thumb {
         height: 70px;
     }
 }
+/* Fail Modal Styles */
+.fail-modal { background: #0d1117; border: 1px solid rgba(255, 71, 87, 0.3); border-radius: 32px; padding: 48px; width: 90%; max-width: 450px; text-align: center; box-shadow: 0 0 50px rgba(255, 71, 87, 0.15); animation: scale-up 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
+
+.fail-title { font-family: var(--font-pixel); font-size: 14px; color: #fff; margin-bottom: 24px; letter-spacing: 2px; }
+
+.fail-quote { font-family: var(--font-pixel); font-size: 10px; color: var(--text-dim); line-height: 1.8; margin-bottom: 32px; font-style: italic; opacity: 0.8; }
+
+.fail-positive { font-family: var(--font-pixel); font-size: 8px; color: #f5a623; margin-bottom: 40px; letter-spacing: 1px; }
+
+.btn-humiliation { width: 100%; background: #f5a623; color: #05070a; padding: 18px; border-radius: 16px; font-family: var(--font-pixel); font-size: 8px; font-weight: bold; border: none; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; }
+
+.btn-humiliation:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(245, 166, 35, 0.3); background: #fff; }
+
+@keyframes scale-up { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
