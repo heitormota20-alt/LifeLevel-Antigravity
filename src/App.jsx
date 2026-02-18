@@ -1172,14 +1172,21 @@ export default function App() {
                         <div className="flex flex-col gap-12 animate-slide-up" style={{ animationDelay: '0.2s' }}>
                             {/* Top Section: Full Width Habit Tracker */}
                             <div className="w-full">
-                                <div className="flex items-center justify-between mb-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
                                     <h2 className="quest-list-title !mb-0">
                                         <ClipboardList size={20} className="text-orange" /> HÁBITOS RECORRENTES
                                     </h2>
+                                    <button
+                                        onClick={() => setShowNewQuestModal(true)}
+                                        className="btn-primary w-full sm:w-auto"
+                                        style={{ padding: '10px 24px', fontSize: 'var(--fs-micro)' }}
+                                    >
+                                        <Plus size={14} /> NOVA MISSÃO
+                                    </button>
                                 </div>
 
-                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mt-6">
-                                    <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                                <div className="flex flex-wrap items-center gap-4 mt-6">
+                                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 flex-1">
                                         <div className="flex items-center gap-3 bg-surface px-3 py-2 rounded-lg border border-border flex-1 sm:flex-initial justify-center sm:justify-start">
                                             <button className="text-dim hover:text-orange text-lg transition-colors p-1">‹</button>
                                             <span className="font-pixel text-bright whitespace-nowrap" style={{ fontSize: 'var(--fs-micro)' }}>FEVEREIRO DE 2026</span>
@@ -1246,13 +1253,6 @@ export default function App() {
                                             </button>
                                         )}
 
-                                        <button
-                                            onClick={() => setShowNewQuestModal(true)}
-                                            className="btn-primary"
-                                            style={{ padding: '8px 20px', fontSize: 'var(--fs-micro)' }}
-                                        >
-                                            <Plus size={14} /> NOVA MISSÃO
-                                        </button>
                                     </div>
                                 </div>
                             </div>
