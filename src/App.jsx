@@ -1178,15 +1178,15 @@ export default function App() {
                                     </h2>
                                 </div>
 
-                                <div className="flex flex-wrap items-center justify-between gap-6 mt-6 mb-4">
-                                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 flex-1">
-                                        <div className="flex items-center gap-3 bg-surface px-3 py-2 rounded-lg border border-border flex-1 sm:flex-initial justify-center sm:justify-start">
+                                <div className="flex flex-wrap items-center justify-between gap-6 mt-10 mb-8 p-1">
+                                    <div className="flex flex-wrap items-center gap-4">
+                                        <div className="flex items-center gap-3 bg-surface px-4 py-2.5 rounded-xl border border-border w-fit">
                                             <button className="text-dim hover:text-orange text-lg transition-colors p-1">‹</button>
-                                            <span className="font-pixel text-bright whitespace-nowrap" style={{ fontSize: 'var(--fs-micro)' }}>FEVEREIRO DE 2026</span>
+                                            <span className="font-pixel text-bright whitespace-nowrap" style={{ fontSize: '8px' }}>FEVEREIRO DE 2026</span>
                                             <button className="text-dim hover:text-orange text-lg transition-colors p-1">›</button>
                                         </div>
 
-                                        <div className="flex items-center gap-2 bg-surface px-3 py-2 rounded-lg border border-border text-dim focus-within:border-orange/50 transition-all flex-1 sm:flex-initial">
+                                        <div className="flex items-center gap-3 bg-surface px-4 py-2.5 rounded-xl border border-border text-dim focus-within:border-orange/50 transition-all w-fit">
                                             <Search size={14} className={searchQuery ? 'text-orange' : ''} />
                                             <input
                                                 type="text"
@@ -1198,7 +1198,7 @@ export default function App() {
                                             />
                                         </div>
 
-                                        <div className="flex items-center gap-2 bg-surface px-3 py-2 rounded-lg border border-border flex-1 sm:flex-initial">
+                                        <div className="flex items-center gap-3 bg-surface px-4 py-2.5 rounded-xl border border-border w-fit">
                                             <Flag size={14} className={filterPriority !== 'Todas' ? 'text-blue' : 'text-dim'} />
                                             <select
                                                 value={filterPriority}
@@ -1214,7 +1214,7 @@ export default function App() {
                                             </select>
                                         </div>
 
-                                        <div className="flex items-center gap-2 bg-surface px-3 py-2 rounded-lg border border-border flex-1 sm:flex-initial">
+                                        <div className="flex items-center gap-3 bg-surface px-4 py-2.5 rounded-xl border border-border w-fit">
                                             <Calendar size={14} className={filterDate ? 'text-orange' : 'text-dim'} />
                                             <input
                                                 type="date"
@@ -1231,7 +1231,7 @@ export default function App() {
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                                    <div className="flex items-center gap-3 ml-auto">
                                         {(searchQuery || filterPriority !== 'Todas' || filterDate) && (
                                             <button
                                                 onClick={() => {
@@ -1240,7 +1240,7 @@ export default function App() {
                                                     setFilterDate('');
                                                 }}
                                                 className="btn-action"
-                                                style={{ padding: '8px 16px', fontSize: 'var(--fs-micro)' }}
+                                                style={{ padding: '10px 20px', fontSize: 'var(--fs-micro)' }}
                                             >
                                                 LIMPAR FILTROS
                                             </button>
@@ -1248,7 +1248,7 @@ export default function App() {
                                         <button
                                             onClick={() => setShowNewQuestModal(true)}
                                             className="btn-primary"
-                                            style={{ padding: '8px 20px', fontSize: 'var(--fs-micro)' }}
+                                            style={{ padding: '10px 24px', fontSize: 'var(--fs-micro)' }}
                                         >
                                             <Plus size={14} /> NOVA MISSÃO
                                         </button>
