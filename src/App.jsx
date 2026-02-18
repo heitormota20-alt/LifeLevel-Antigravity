@@ -1103,12 +1103,14 @@ export default function App() {
                             </div>
                             <div className="char-info">
                                 <span className="char-level-tag">NÍVEL {user.level} • {user.title}</span>
-                                <h1 className="char-name uppercase flex items-center gap-4 flex-wrap">
-                                    {user.name}
-                                    <span className="text-violet text-sm">/ {user.characterClass}</span>
+                                <h1 className="char-name uppercase flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+                                    <div className="flex items-center gap-2">
+                                        {user.name}
+                                        <span className="text-violet text-sm">/ {user.characterClass}</span>
+                                    </div>
                                     <button
                                         onClick={() => setCurrentProfileId(null)}
-                                        className="text-xs text-violet opacity-30 hover:opacity-100 transition-opacity flex items-center gap-1 font-pixel cursor-pointer ml-auto"
+                                        className="text-[10px] text-violet opacity-50 hover:opacity-100 transition-opacity flex items-center gap-1 font-pixel cursor-pointer"
                                         title="Trocar Personagem"
                                     >
                                         <Users size={12} /> TROCAR
@@ -1176,35 +1178,35 @@ export default function App() {
                                     </h2>
                                 </div>
 
-                                <div className="flex flex-wrap items-center justify-between gap-4 mt-6">
-                                    <div className="flex items-center gap-6">
-                                        <div className="flex items-center gap-4 bg-surface px-4 py-2 rounded-lg border border-border">
-                                            <button className="text-dim hover:text-orange text-lg transition-colors">‹</button>
-                                            <span className="font-pixel text-bright" style={{ fontSize: 'var(--fs-micro)' }}>FEVEREIRO DE 2026</span>
-                                            <button className="text-dim hover:text-orange text-lg transition-colors">›</button>
+                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mt-6">
+                                    <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                                        <div className="flex items-center gap-3 bg-surface px-3 py-2 rounded-lg border border-border flex-1 sm:flex-initial justify-center sm:justify-start">
+                                            <button className="text-dim hover:text-orange text-lg transition-colors p-1">‹</button>
+                                            <span className="font-pixel text-bright whitespace-nowrap" style={{ fontSize: 'var(--fs-micro)' }}>FEVEREIRO DE 2026</span>
+                                            <button className="text-dim hover:text-orange text-lg transition-colors p-1">›</button>
                                         </div>
 
-                                        <div className="flex items-center gap-2 bg-surface px-4 py-2 rounded-lg border border-border text-dim focus-within:border-orange/50 transition-all">
+                                        <div className="flex items-center gap-2 bg-surface px-3 py-2 rounded-lg border border-border text-dim focus-within:border-orange/50 transition-all flex-1 sm:flex-initial">
                                             <Search size={14} className={searchQuery ? 'text-orange' : ''} />
                                             <input
                                                 type="text"
-                                                placeholder="BUSCAR MISSÃO..."
-                                                className="bg-transparent border-none p-0 text-bright outline-none w-40 placeholder:opacity-30"
+                                                placeholder="BUSCAR..."
+                                                className="bg-transparent border-none p-0 text-bright outline-none w-full sm:w-32 placeholder:opacity-30"
                                                 style={{ fontSize: 'var(--fs-micro)', fontFamily: 'var(--font-pixel)' }}
                                                 value={searchQuery}
                                                 onChange={(e) => setSearchQuery(e.target.value)}
                                             />
                                         </div>
 
-                                        <div className="flex items-center gap-2 bg-surface px-4 py-2 rounded-lg border border-border">
+                                        <div className="flex items-center gap-2 bg-surface px-3 py-2 rounded-lg border border-border flex-1 sm:flex-initial">
                                             <Flag size={14} className={filterPriority !== 'Todas' ? 'text-blue' : 'text-dim'} />
                                             <select
                                                 value={filterPriority}
                                                 onChange={(e) => setFilterPriority(e.target.value)}
-                                                className="bg-transparent border-none text-bright outline-none cursor-pointer font-pixel"
+                                                className="bg-transparent border-none text-bright outline-none cursor-pointer font-pixel w-full sm:w-auto"
                                                 style={{ fontSize: 'var(--fs-micro)' }}
                                             >
-                                                <option value="Todas" className="bg-[#0d1117]">TODAS PRIORIDADES</option>
+                                                <option value="Todas" className="bg-[#0d1117]">TODAS</option>
                                                 <option value="Alta" className="bg-[#0d1117]">🔴 ALTA</option>
                                                 <option value="Média" className="bg-[#0d1117]">🟡 MÉDIA</option>
                                                 <option value="Normal" className="bg-[#0d1117]">🔵 NORMAL</option>
@@ -1212,14 +1214,14 @@ export default function App() {
                                             </select>
                                         </div>
 
-                                        <div className="flex items-center gap-2 bg-surface px-4 py-2 rounded-lg border border-border">
+                                        <div className="flex items-center gap-2 bg-surface px-3 py-2 rounded-lg border border-border flex-1 sm:flex-initial">
                                             <Calendar size={14} className={filterDate ? 'text-orange' : 'text-dim'} />
                                             <input
                                                 type="date"
                                                 value={filterDate}
                                                 onChange={(e) => setFilterDate(e.target.value)}
-                                                className="bg-transparent border-none text-bright outline-none cursor-pointer font-pixel"
-                                                style={{ fontSize: 'var(--fs-micro)' }}
+                                                className="bg-transparent border-none text-bright outline-none cursor-pointer font-pixel w-full sm:w-auto"
+                                                style={{ fontSize: '8px' }}
                                             />
                                             {filterDate && (
                                                 <button onClick={() => setFilterDate('')} className="text-dim hover:text-white transition-colors">
@@ -1458,14 +1460,15 @@ export default function App() {
                             </div>
 
                             {/* Dashboard Header with Filters */}
-                            <div className="flex items-center justify-between mb-6 mt-12 border-b border-white/5 pb-4">
-                                <h3 className="font-pixel text-orange tracking-[2px]" style={{ fontSize: 'var(--fs-small)' }}>ANÁLISE DE PERFORMANCE</h3>
-                                <div className="dashboard-filter-container">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 mt-12 border-b border-white/5 pb-4">
+                                <h3 className="font-pixel text-orange tracking-[2px] text-center md:text-left" style={{ fontSize: 'var(--fs-small)' }}>ANÁLISE DE PERFORMANCE</h3>
+                                <div className="dashboard-filter-container self-center md:self-auto">
                                     {[7, 30].map(p => (
                                         <button
                                             key={p}
                                             onClick={() => setDashboardPeriod(p)}
                                             className={`dashboard-filter-btn ${dashboardPeriod === p ? 'active' : ''}`}
+                                            style={{ padding: '8px 12px', fontSize: '8px' }}
                                         >
                                             ÚLTIMOS {p} DIAS
                                         </button>
@@ -1543,7 +1546,7 @@ export default function App() {
                             </div>
 
                             {/* Bottom Section: Widgets Side-by-Side */}
-                            <div className="grid grid-cols-1 lg-grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                 <div className="stat-widget !mb-0 shadow-[0_10px_30px_rgba(0,0,0,0.3)] !h-auto">
                                     <div className="stat-widget-header mb-6">
                                         <h3 className="stat-title text-orange"><Utensils size={16} /> ALQUIMIA</h3>

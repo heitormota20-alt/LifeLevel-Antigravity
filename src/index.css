@@ -296,6 +296,18 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
     .char-header {
         flex-direction: column;
         text-align: center;
+        padding: 16px;
+        gap: 16px;
+    }
+
+    .char-name {
+        font-size: 16px;
+        justify-content: center !important;
+    }
+
+    .avatar-frame {
+        width: 60px;
+        height: 60px;
     }
 }
 
@@ -886,19 +898,25 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
     left: 0;
     background: #0d1117;
     z-index: 10;
-    width: 300px;
-    min-width: 300px;
+    width: 240px;
+    min-width: 240px;
     border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.habit-table th:first-child {
-    z-index: 110;
+@media (max-width: 768px) {
+
+    .habit-table th:first-child,
+    .habit-table td:first-child {
+        width: 140px;
+        min-width: 140px;
+    }
 }
 
 .habit-table th.day-col {
     text-align: center;
-    width: 55px;
-    padding: 12px 8px;
+    width: 50px;
+    min-width: 50px;
+    padding: 12px 4px;
 }
 
 .day-header-container {
@@ -1098,20 +1116,45 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
 
 @media (max-width: 768px) {
     .habit-table-container {
-        padding: 16px;
-        margin: 0 -16px 24px -16px;
+        padding: 8px;
+        margin: 0 -8px 24px -8px;
         border-radius: 0;
+        border-left: none;
+        border-right: none;
+        max-height: 60vh;
+    }
+
+    .habit-table th,
+    .habit-table td {
+        padding: 8px 6px;
     }
 
     .habit-table th.day-col,
     .habit-table td.day-cell {
-        width: 50px;
-        padding: 8px 4px;
+        width: 44px;
+        min-width: 44px;
+        padding: 8px 2px;
     }
 
     .habit-checkbox {
-        width: 28px;
-        height: 28px;
+        width: 26px;
+        height: 26px;
+    }
+
+    .habit-task-name {
+        font-size: 13px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100px;
+    }
+
+    .day-number {
+        font-size: 13px;
+    }
+
+    .day-name {
+        font-size: 8px;
     }
 }
 
