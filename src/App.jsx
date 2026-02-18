@@ -1180,13 +1180,13 @@ export default function App() {
 
                                 <div className="flex flex-wrap items-center justify-between gap-6 mt-10 mb-8 p-1">
                                     <div className="flex flex-wrap items-center gap-4">
-                                        <div className="flex items-center gap-3 bg-surface px-4 py-2.5 rounded-xl border border-border w-fit">
+                                        <div className="flex items-center gap-3 bg-transparent px-2 py-2 border-none w-fit transition-all hover:text-orange">
                                             <button className="text-dim hover:text-orange text-lg transition-colors p-1">‹</button>
                                             <span className="font-pixel text-bright whitespace-nowrap" style={{ fontSize: '8px' }}>FEVEREIRO DE 2026</span>
                                             <button className="text-dim hover:text-orange text-lg transition-colors p-1">›</button>
                                         </div>
 
-                                        <div className="flex items-center gap-3 bg-surface px-4 py-2.5 rounded-xl border border-border text-dim focus-within:border-orange/50 transition-all w-fit">
+                                        <div className="flex items-center gap-3 bg-transparent px-2 py-2 border-none text-dim focus-within:text-orange transition-all w-fit">
                                             <Search size={14} className={searchQuery ? 'text-orange' : ''} />
                                             <input
                                                 type="text"
@@ -1198,7 +1198,7 @@ export default function App() {
                                             />
                                         </div>
 
-                                        <div className="flex items-center gap-3 bg-surface px-4 py-2.5 rounded-xl border border-border w-fit">
+                                        <div className="flex items-center gap-3 bg-transparent px-2 py-2 border-none w-fit transition-all hover:text-blue">
                                             <Flag size={14} className={filterPriority !== 'Todas' ? 'text-blue' : 'text-dim'} />
                                             <select
                                                 value={filterPriority}
@@ -1214,7 +1214,7 @@ export default function App() {
                                             </select>
                                         </div>
 
-                                        <div className="flex items-center gap-3 bg-surface px-4 py-2.5 rounded-xl border border-border w-fit">
+                                        <div className="flex items-center gap-3 bg-transparent px-2 py-2 border-none w-fit transition-all hover:text-orange">
                                             <Calendar size={14} className={filterDate ? 'text-orange' : 'text-dim'} />
                                             <input
                                                 type="date"
