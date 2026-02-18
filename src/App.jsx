@@ -29,8 +29,30 @@ import {
     RotateCcw,
     Activity,
     Check,
-    User
+    User,
+    Search,
+    X,
+    Flag,
+    BarChart3,
+    Calendar,
+    Trash2,
+    ChevronUp,
+    ChevronDown,
+    ArrowUpCircle,
+    ArrowDownCircle,
+    GripVertical
 } from 'lucide-react'
+import {
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    AreaChart,
+    Area
+} from 'recharts'
 
 // --- CONSTANTS ---
 const CLASSES = [
@@ -65,18 +87,23 @@ const INITIAL_USER = {
     healthDescription: '',
     medications: [],
     quests: [
-        { id: 1, title: 'Acordar cedo 7:00', desc: 'Despertar no horário sagrado para o bônus de produtividade.', category: 'GERAL', xpReward: 15, goldReward: 10, completed: false, createdAt: Date.now() },
-        { id: 2, title: 'Café da manhã', desc: 'Poção de energia matinal para começar a jornada.', category: 'DIETA', xpReward: 10, goldReward: 5, completed: false, createdAt: Date.now() },
-        { id: 3, title: 'Tomar banho', desc: 'Ritual de purificação para renovar a estamina.', category: 'GERAL', xpReward: 10, goldReward: 5, completed: false, createdAt: Date.now() },
-        { id: 4, title: 'Escovar os dentes', desc: 'Manter a armadura do sorriso impecável.', category: 'GERAL', xpReward: 5, goldReward: 2, completed: false, createdAt: Date.now() },
-        { id: 5, title: 'Fazer a marmita', desc: 'Alquimia culinária para garantir nutrição futura.', category: 'DIETA', xpReward: 25, goldReward: 15, completed: false, createdAt: Date.now() },
-        { id: 6, title: 'Trabalhar', desc: 'A principal batalha diária por ouro e prestígio.', category: 'GERAL', xpReward: 100, goldReward: 50, completed: false, createdAt: Date.now() },
-        { id: 7, title: 'Treinar', desc: 'Duelo na arena para aumentar os atributos de força.', category: 'ARENA', xpReward: 50, goldReward: 20, completed: false, createdAt: Date.now() },
-        { id: 8, title: 'Jantar', desc: 'Recuperar mana e HP para o fim do turno.', category: 'DIETA', xpReward: 15, goldReward: 10, completed: false, createdAt: Date.now() },
-        { id: 9, title: 'Dormir Cedo', desc: 'Entrar em estado de repouso para regeneração total.', category: 'GERAL', xpReward: 30, goldReward: 20, completed: false, createdAt: Date.now() },
+        { id: 1, title: 'Acordar cedo 7:00', desc: 'Despertar no horário sagrado para o bônus de produtividade.', category: 'HÁBITOS', xpReward: 15, goldReward: 10, completed: false, isRecurring: true, priority: 'Alta', createdAt: Date.now() },
+        { id: 2, title: 'Café da manhã', desc: 'Poção de energia matinal para começar a jornada.', category: 'DIETA', xpReward: 10, goldReward: 5, completed: false, isRecurring: true, priority: 'Normal', createdAt: Date.now() },
+        { id: 3, title: 'Tomar banho', desc: 'Ritual de purificação para renovar a estamina.', category: 'HIGIENE', xpReward: 10, goldReward: 5, completed: false, isRecurring: true, priority: 'Normal', createdAt: Date.now() },
+        { id: 4, title: 'Escovar os dentes', desc: 'Manter a armadura do sorriso impecável.', category: 'HIGIENE', xpReward: 5, goldReward: 2, completed: false, isRecurring: true, priority: 'Normal', createdAt: Date.now() },
+        { id: 5, title: 'Fazer a marmita', desc: 'Alquimia culinária para garantir nutrição futura.', category: 'DIETA', xpReward: 25, goldReward: 15, completed: false, isRecurring: true, priority: 'Média', createdAt: Date.now() },
+        { id: 6, title: 'Trabalhar', desc: 'A principal batalha diária por ouro e prestígio.', category: 'TAREFAS', xpReward: 100, goldReward: 50, completed: false, isRecurring: true, priority: 'Alta', createdAt: Date.now() },
+        { id: 7, title: 'Treinar', desc: 'Duelo na arena para aumentar os atributos de força.', category: 'HÁBITOS', xpReward: 50, goldReward: 20, completed: false, isRecurring: true, priority: 'Alta', createdAt: Date.now() },
+        { id: 8, title: 'Jantar', desc: 'Recuperar mana e HP para o fim do turno.', category: 'DIETA', xpReward: 15, goldReward: 10, completed: false, isRecurring: true, priority: 'Normal', createdAt: Date.now() },
+        { id: 9, title: 'Dormir Cedo', desc: 'Entrar em estado de repouso para regeneração total.', category: 'HÁBITOS', xpReward: 30, goldReward: 20, completed: false, isRecurring: true, priority: 'Normal', createdAt: Date.now() },
     ],
     lastLoginDate: new Date().toLocaleDateString(),
-    onboarded: false
+    onboarded: false,
+    completedHistory: [],
+    dailyMealPlan: [],
+    mealDone: [],
+    useAI: false,
+    useDefaultQuests: false
 }
 
 // --- WORKOUT DATA ---
@@ -97,6 +124,35 @@ const WORKOUTS = {
     ]
 }
 
+const MEAL_PLANS = {
+    'Emagrecer': {
+        options: [
+            { time: '08:00', name: 'Despertar Fit', items: ['Omelete de 2 ovos com espinafre', 'Panqueca de aveia com banana', 'Iogurte com frutas vermelhas e granola'], cals: 260 },
+            { time: '10:30', name: 'Lanche Saciedade', items: ['1 Iogurte natural desnatado + chia', '1 Maçã + 5 amêndoas', 'Mix de sementes (girassol e abóbora)'], cals: 130 },
+            { time: '13:00', name: 'Almoço de Ferro', items: ['Frango grelhado (150g) + brócolis', 'Tilápia ao forno + aspargos', 'Patinho moído + vagem no vapor'], cals: 420 },
+            { time: '16:30', name: 'Energia Limpa', items: ['1 Banana com canela', '1 Pera + 2 castanhas do pará', 'Suco verde detox (couve, limão, maçã)'], cals: 140 },
+            { time: '20:00', name: 'Repouso Leve', items: ['Sopa de abóbora com frango', 'Salada Caesar com frango grelhado (sem croutons)', 'Omelete de claras com queijo branco'], cals: 350 }
+        ]
+    },
+    'Ganhar massa': {
+        options: [
+            { time: '07:30', name: 'Café do Titã', items: ['Cuscuz com 3 ovos e queijo', 'Tapioca recheada com frango e requeijão', 'Mingau de aveia com whey e pasta de amendoim'], cals: 580 },
+            { time: '10:00', name: 'Poder Proteico', items: ['Shake de Whey + aveia + leite desnatado', 'Sanduíche de atum com pão integral', 'Barra de proteína + 1 banana'], cals: 420 },
+            { time: '12:30', name: 'Almoço do Guerreiro', items: ['Arroz (2 escumadeiras) + feijão + carne magra (180g)', 'Macarrão integral com frango aos cubos', 'Purê de batata + salmão grelhado'], cals: 750 },
+            { time: '16:00', name: 'Pré-Combate', items: ['Batata doce cozida + frango desfiado', 'Omelete de 4 ovos com torrada integral', 'Açaí com granola e mel'], cals: 380 },
+            { time: '20:30', name: 'Banquete Final', items: ['Arroz com brócolis + sobrecoxa assada (sem pele)', 'Arroz integral + hambúrguer caseiro de patinho', 'Torta de frango com massa de grão de bico'], cals: 650 }
+        ]
+    },
+    'default': {
+        options: [
+            { time: '08:00', name: 'Café Equilibrado', items: ['Pão com queijo e café com leite', 'Iogurte com granola e fruta', 'Tapioca com ovo'], cals: 380 },
+            { time: '12:30', name: 'Almoço Prato Feito', items: ['Arroz, feijão e frango grelhado', 'Macarrão à bolonhesa', 'Peixe assado com batatas'], cals: 550 },
+            { time: '16:00', name: 'Intervalo Saudável', items: ['Mix de frutas', 'Iogurte natural', '1 fatia de bolo caseiro'], cals: 180 },
+            { time: '20:00', name: 'Ceia Nutritiva', items: ['Sopa de legumes', 'Omelete simples', 'Sanduíche natural de frango'], cals: 420 }
+        ]
+    }
+}
+
 // --- ONBOARDING COMPONENT ---
 function Onboarding({ onComplete, onCancel }) {
     const [step, setStep] = useState(1);
@@ -108,7 +164,9 @@ function Onboarding({ onComplete, onCancel }) {
         characterClass: 'NÃO SEI',
         hasHealthIssues: false,
         healthDescription: '',
-        medications: []
+        medications: [],
+        useAI: false,
+        useDefaultQuests: false
     });
 
     const [medInput, setMedInput] = useState({ name: '', time: '' });
@@ -122,32 +180,43 @@ function Onboarding({ onComplete, onCancel }) {
         <div className="min-h-screen flex items-center justify-center p-4 bg-deep">
             <div className="w-full max-w-xl animate-slide-up">
                 <div className="premium-card glass text-center border-violet">
-                    <p className="font-pixel text-[8px] mb-8 text-violet">CRIAÇÃO DE PERSONAGEM - ETAPA {step} / 4</p>
+                    <p className="font-pixel text-violet uppercase tracking-[2px] mb-8" style={{ fontSize: 'var(--fs-micro)' }}>
+                        Criação de Personagem — Etapa {step} / 5
+                    </p>
 
                     {step === 1 && (
                         <div className="space-y-6">
-                            <input
-                                placeholder="NOME DO HERÓI"
-                                className="w-full uppercase text-center py-4"
-                                value={formData.name}
-                                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                            />
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <input placeholder="PESO (KG)" type="number" className="text-center" value={formData.weight} onChange={e => setFormData({ ...formData, weight: e.target.value })} />
-                                <input placeholder="ALTURA (CM)" type="number" className="text-center" value={formData.height} onChange={e => setFormData({ ...formData, height: e.target.value })} />
-                            </div>
                             <div className="space-y-4">
-                                <button onClick={nextStep} className="btn-premium w-full">PRÓXIMO</button>
-                                <button onClick={onCancel} className="w-full text-[8px] font-pixel text-dim hover:text-white transition-colors uppercase">
-                                    Voltar
-                                </button>
+                                <label className="font-pixel text-dim uppercase block text-left" style={{ fontSize: 'var(--fs-micro)' }}>Identidade do Herói</label>
+                                <input
+                                    placeholder="NOME DO HERÓI"
+                                    className="w-full uppercase text-center"
+                                    value={formData.name}
+                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="font-pixel text-dim uppercase block text-left" style={{ fontSize: 'var(--fs-micro)' }}>Peso (KG)</label>
+                                    <input placeholder="00" type="number" className="text-center" value={formData.weight} onChange={e => setFormData({ ...formData, weight: e.target.value })} />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="font-pixel text-dim uppercase block text-left" style={{ fontSize: 'var(--fs-micro)' }}>Altura (CM)</label>
+                                    <input placeholder="000" type="number" className="text-center" value={formData.height} onChange={e => setFormData({ ...formData, height: e.target.value })} />
+                                </div>
+                            </div>
+
+                            <div className="pt-4 space-y-3">
+                                <button onClick={nextStep} className="btn-primary w-full">PRÓXIMO PASSO</button>
+                                <button onClick={onCancel} className="btn-action w-full">CANCELAR JORNADA</button>
                             </div>
                         </div>
                     )}
 
                     {step === 2 && (
                         <div className="space-y-4">
-                            <p className="font-pixel text-[10px] mb-6 text-violet">QUAL O SEU DESTINO? (OBJETIVOS)</p>
+                            <p className="font-pixel text-violet uppercase mb-6" style={{ fontSize: 'var(--fs-small)' }}>Qual o seu destino?</p>
                             <div className="grid grid-cols-1 gap-3">
                                 {[
                                     { id: 'Controlar rotina', label: 'Controlar rotina', icon: ClipboardList },
@@ -158,76 +227,81 @@ function Onboarding({ onComplete, onCancel }) {
                                     <div
                                         key={goal.id}
                                         onClick={() => setFormData({ ...formData, goals: formData.goals.includes(goal.id) ? formData.goals.filter(g => g !== goal.id) : [...formData.goals, goal.id] })}
-                                        className={`selectable-card ${formData.goals.includes(goal.id) ? 'selected pulse-selected' : ''}`}
+                                        className={`selectable-card ${formData.goals.includes(goal.id) ? 'selected' : ''}`}
                                     >
-                                        <div className={`p-3 rounded-lg ${formData.goals.includes(goal.id) ? 'bg-violet' : 'bg-surface'}`}>
-                                            <goal.icon size={24} className={formData.goals.includes(goal.id) ? 'text-white' : 'text-violet'} />
+                                        <div className={`p-3 rounded-lg ${formData.goals.includes(goal.id) ? 'bg-violet shadow-[0_0_15px_rgba(110,86,207,0.3)]' : 'bg-surface'}`}>
+                                            <goal.icon size={20} className={formData.goals.includes(goal.id) ? 'text-white' : 'text-violet'} />
                                         </div>
                                         <div className="flex-1 text-left">
-                                            <h4 className={`font-pixel text-[9px] uppercase ${formData.goals.includes(goal.id) ? 'text-white' : 'text-dim'}`}>
+                                            <h4 className="uppercase" style={{ fontSize: 'var(--fs-small)' }}>
                                                 {goal.label}
                                             </h4>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            <button onClick={nextStep} className="btn-premium w-full mt-8">PRÓXIMO</button>
+                            <div className="pt-6">
+                                <button onClick={nextStep} className="btn-primary w-full">CONTINUAR</button>
+                            </div>
                         </div>
                     )}
 
                     {step === 3 && (
                         <div className="space-y-4">
-                            <p className="font-pixel text-[10px] text-violet mb-6 uppercase">Escolha sua Classe</p>
+                            <p className="font-pixel text-violet uppercase mb-6" style={{ fontSize: 'var(--fs-small)' }}>Escolha sua Classe de Herói</p>
                             <div className="grid gap-3">
                                 {CLASSES.map(cls => (
                                     <div
                                         key={cls.id}
                                         onClick={() => setFormData({ ...formData, characterClass: cls.id })}
-                                        className={`selectable-card ${formData.characterClass === cls.id ? 'selected pulse-selected' : ''}`}
+                                        className={`selectable-card ${formData.characterClass === cls.id ? 'selected' : ''}`}
                                     >
-                                        <div className={`p-3 rounded-lg ${formData.characterClass === cls.id ? 'bg-violet' : 'bg-surface'}`}>
-                                            <cls.icon size={24} className={formData.characterClass === cls.id ? 'text-white' : 'text-violet'} />
+                                        <div className={`p-3 rounded-lg ${formData.characterClass === cls.id ? 'bg-violet shadow-[0_0_15px_rgba(110,86,207,0.3)]' : 'bg-surface'}`}>
+                                            <cls.icon size={20} className={formData.characterClass === cls.id ? 'text-white' : 'text-violet'} />
                                         </div>
                                         <div className="flex-1">
-                                            <h4 className={`font-pixel text-[9px] mb-1 ${formData.characterClass === cls.id ? 'text-white' : 'text-bright'}`}>{cls.name}</h4>
-                                            <p className="text-xs text-dim leading-tight">{cls.desc}</p>
+                                            <h4 className="mb-1 uppercase" style={{ fontSize: 'var(--fs-small)' }}>{cls.name}</h4>
+                                            <p className="text-dim leading-tight" style={{ fontSize: 'var(--fs-micro)' }}>{cls.desc}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            <button onClick={nextStep} className="btn-premium w-full mt-8">PRÓXIMO</button>
+                            <div className="pt-6">
+                                <button onClick={nextStep} className="btn-primary w-full">CONFIRMAR CLASSE</button>
+                            </div>
                         </div>
                     )}
 
                     {step === 4 && (
                         <div className="space-y-6 text-left animate-slide-up">
-                            <div>
-                                <p className="font-pixel text-[8px] text-center text-violet mb-4">CONDIÇÕES DE SAÚDE</p>
-                                <div className="selectable-card" onClick={() => setFormData({ ...formData, hasHealthIssues: !formData.hasHealthIssues })}>
-                                    <div className={`p-2 rounded-lg ${formData.hasHealthIssues ? 'bg-hp-red' : 'bg-surface'}`}>
-                                        <Heart size={20} className={formData.hasHealthIssues ? 'text-white' : 'text-dim'} />
+                            <div className="text-center">
+                                <p className="font-pixel text-violet uppercase mb-4" style={{ fontSize: 'var(--fs-small)' }}>Ficha Médica (Pergaminhos de Saúde)</p>
+                                <div className={`selectable-card ${formData.hasHealthIssues ? 'selected' : ''}`} onClick={() => setFormData({ ...formData, hasHealthIssues: !formData.hasHealthIssues })}>
+                                    <div className={`p-3 rounded-lg ${formData.hasHealthIssues ? 'bg-hp-red shadow-[0_0_15px_rgba(229,72,77,0.3)]' : 'bg-surface'}`}>
+                                        <Heart size={20} className={formData.hasHealthIssues ? 'text-white' : (formData.hasHealthIssues ? 'text-white' : 'text-dim')} />
                                     </div>
                                     <div className="flex-1">
-                                        <h4 className="text-sm font-bold">POSSUI PROBLEMAS DE SAÚDE?</h4>
-                                        <p className="text-xs text-dim">{formData.hasHealthIssues ? 'Sim, eu tenho condições que requerem atenção.' : 'Não, estou com a saúde em dia.'}</p>
-                                    </div>
-                                    <div className={`w-6 h-6 border-2 flex items-center justify-center ${formData.hasHealthIssues ? 'border-hp-red bg-hp-red/20' : 'border-border'}`}>
-                                        {formData.hasHealthIssues && <CheckCircle2 size={14} className="text-hp-red" />}
+                                        <h4 className="uppercase" style={{ fontSize: 'var(--fs-small)' }}>Possui condições de saúde?</h4>
+                                        <p className="text-dim" style={{ fontSize: 'var(--fs-micro)' }}>{formData.hasHealthIssues ? 'Sim, o herói possui restrições.' : 'Não, saúde em plena forma.'}</p>
                                     </div>
                                 </div>
                             </div>
 
                             {formData.hasHealthIssues && (
-                                <textarea
-                                    placeholder="DESCREVA BREVEMENTE SUA CONDIÇÃO..."
-                                    className="w-full h-24 p-4 text-sm"
-                                    value={formData.healthDescription}
-                                    onChange={e => setFormData({ ...formData, healthDescription: e.target.value })}
-                                />
+                                <div className="space-y-2">
+                                    <label className="font-pixel text-dim uppercase block" style={{ fontSize: 'var(--fs-micro)' }}>Detalhes da Condição</label>
+                                    <textarea
+                                        placeholder="DESCREVA BREVEMENTE SUA CONDIÇÃO..."
+                                        className="w-full h-24"
+                                        style={{ fontSize: 'var(--fs-small)' }}
+                                        value={formData.healthDescription}
+                                        onChange={e => setFormData({ ...formData, healthDescription: e.target.value })}
+                                    />
+                                </div>
                             )}
 
                             <div className="premium-card bg-surface/50 border-violet/30 p-4">
-                                <p className="font-pixel text-[8px] text-violet mb-4">GERENCIAR POÇÕES (REMÉDIOS)</p>
+                                <p className="font-pixel text-[12px] text-violet mb-4">GERENCIAR POÇÕES (REMÉDIOS)</p>
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-2">
                                         <div style={{ flex: '3' }}>
@@ -264,7 +338,7 @@ function Onboarding({ onComplete, onCancel }) {
                                     </div>
 
                                     {formData.medications.length > 0 && (
-                                        <div className="grid gap-2 mt-4">
+                                        <div className="grid gap-2 mt-4 text-left">
                                             {formData.medications.map(med => (
                                                 <div key={med.id} className="flex justify-between items-center bg-deep p-3 rounded-lg border border-border">
                                                     <div className="flex items-center gap-3">
@@ -284,19 +358,52 @@ function Onboarding({ onComplete, onCancel }) {
                                 </div>
                             </div>
 
+                            <div className="pt-6 space-y-3">
+                                <button onClick={nextStep} className="btn-primary w-full">PRÓXIMO</button>
+                                <button onClick={() => setStep(3)} className="btn-action w-full">VOLTAR</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {step === 5 && (
+                        <div className="space-y-6 text-left">
+                            <p className="font-pixel text-violet uppercase text-center mb-6" style={{ fontSize: 'var(--fs-small)' }}>Configurações de Jornada</p>
+
                             <div className="space-y-4">
-                                <button onClick={() => onComplete(formData)} className="btn-premium w-full text-[10px] py-4">
-                                    INICIAR JORNADA
-                                </button>
-                                <button onClick={() => setStep(3)} className="w-full text-[8px] font-pixel text-dim hover:text-white transition-colors uppercase">
-                                    Voltar
+                                <div className={`selectable-card ${formData.useAI ? 'selected' : ''}`} onClick={() => setFormData({ ...formData, useAI: !formData.useAI })}>
+                                    <div className={`p-3 rounded-lg ${formData.useAI ? 'bg-violet shadow-[0_0_15px_rgba(110,86,207,0.3)]' : 'bg-surface'}`}>
+                                        <Zap size={20} className={formData.useAI ? 'text-white' : 'text-violet'} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h4 className="uppercase" style={{ fontSize: 'var(--fs-small)' }}>ATIVAR ALQUIMIA IA</h4>
+                                        <p className="text-dim" style={{ fontSize: 'var(--fs-micro)' }}>A IA sugerirá metas e calculará sua dieta automaticamente.</p>
+                                    </div>
+                                </div>
+
+                                <div className={`selectable-card ${formData.useDefaultQuests ? 'selected' : ''}`} onClick={() => setFormData({ ...formData, useDefaultQuests: !formData.useDefaultQuests })}>
+                                    <div className={`p-3 rounded-lg ${formData.useDefaultQuests ? 'bg-violet shadow-[0_0_15px_rgba(110,86,207,0.3)]' : 'bg-surface'}`}>
+                                        <ClipboardList size={20} className={formData.useDefaultQuests ? 'text-white' : 'text-violet'} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h4 className="uppercase" style={{ fontSize: 'var(--fs-small)' }}>MISSÕES INICIAIS</h4>
+                                        <p className="text-dim" style={{ fontSize: 'var(--fs-micro)' }}>Começar com uma lista de tarefas básicas de herói.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="pt-8">
+                                <button
+                                    onClick={() => onComplete(formData)}
+                                    className="btn-primary w-full"
+                                >
+                                    INICIAR AVENTURA
                                 </button>
                             </div>
                         </div>
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     )
 }
 
@@ -310,8 +417,24 @@ export default function App() {
     const [isProtocolActive, setIsProtocolActive] = useState(false);
     const [showFailModal, setShowFailModal] = useState(false);
     const [showNewQuestModal, setShowNewQuestModal] = useState(false);
-    const [newQuestData, setNewQuestData] = useState({ title: '', time: '' });
-
+    const [newQuestData, setNewQuestData] = useState({
+        title: '',
+        desc: '',
+        time: '30',
+        category: 'HÁBITOS',
+        targetDate: new Date().toISOString().split('T')[0],
+        isRecurring: false,
+        difficulty: 5,
+        priority: 'Normal'
+    });
+    const [dashboardPeriod, setDashboardPeriod] = useState(7);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filterPriority, setFilterPriority] = useState('Todas');
+    const [filterDate, setFilterDate] = useState('');
+    const [calendarDate, setCalendarDate] = useState(new Date());
+    const [highlightedQuestId, setHighlightedQuestId] = useState(null);
+    const [showNewMealModal, setShowNewMealModal] = useState(false);
+    const [newMealData, setNewMealData] = useState({ title: '', desc: '', time: '08:00' });
     const [profiles, setProfiles] = useState(() => {
         try {
             const saved = localStorage.getItem('life-level-profiles-v1');
@@ -322,18 +445,112 @@ export default function App() {
     });
 
     const [currentProfileId, setCurrentProfileId] = useState(null);
-
+    const [profileToDelete, setProfileToDelete] = useState(null);
     const [user, setUser] = useState(INITIAL_USER);
     const [isCreatingProfile, setIsCreatingProfile] = useState(false);
+    const [draggedItemId, setDraggedItemId] = useState(null);
+    const [dragOverId, setDragOverId] = useState(null);
+    const [lastDroppedId, setLastDroppedId] = useState(null);
 
+    const generateDailyPlan = () => {
+        if (!user || !user.goals) return;
+        let planType = 'default';
+        if (user.goals.includes('Emagrecer')) planType = 'Emagrecer';
+        if (user.goals.includes('Ganhar massa')) planType = 'Ganhar massa';
+
+        const generated = MEAL_PLANS[planType].options.map(opt => ({
+            ...opt,
+            selectedItem: opt.items[Math.floor(Math.random() * opt.items.length)]
+        }));
+
+        setUser(prev => ({
+            ...prev,
+            dailyMealPlan: generated,
+            mealDone: [] // Resetar refeições concluídas ao gerar novo plano
+        }));
+    };
+
+    // Auto-generate on first load or when goal changes
+    useEffect(() => {
+        if (user.onboarded && user.useAI && (!user.dailyMealPlan || user.dailyMealPlan.length === 0)) {
+            generateDailyPlan();
+        }
+    }, [user.goals, user.onboarded, user.useAI, user.dailyMealPlan?.length]);
+
+    const handleCalendarQuestClick = (questId) => {
+        setHighlightedQuestId(questId);
+        setActiveTab('inicio');
+        setSearchQuery('');
+        setFilterPriority('Todas');
+        setFilterDate('');
+
+        // Clear highlight after animation
+        setTimeout(() => {
+            setHighlightedQuestId(null);
+        }, 3000);
+    };
+
+    // Unified Profile Loading & Migration Logic
     useEffect(() => {
         if (currentProfileId) {
             const activeProfile = profiles.find(p => p.id === currentProfileId);
             if (activeProfile) {
-                setUser(activeProfile);
+                // Logic to check if migration is needed before setting state
+                const defaultTitles = [
+                    'Acordar cedo 7:00', 'Café da manhã', 'Tomar banho',
+                    'Escovar os dentes', 'Fazer a marmita', 'Trabalhar',
+                    'Treinar', 'Jantar', 'Dormir Cedo'
+                ];
+
+                let quests = [...(activeProfile.quests || [])];
+                let history = [...(activeProfile.completedHistory || [])];
+                let changed = false;
+
+                // 1. Force isRecurring for default tasks
+                quests = quests.map(q => {
+                    const shouldBeRec = defaultTitles.includes(q.title) ||
+                        ['HÁBITOS', 'DIETA', 'HIGIENE'].includes(q.category);
+                    if (q.isRecurring === undefined || (shouldBeRec && !q.isRecurring)) {
+                        changed = true;
+                        return { ...q, isRecurring: true };
+                    }
+                    return q;
+                });
+
+                // 2. Recover lost default tasks
+                const lostDefaults = history.filter(h => defaultTitles.includes(h.title));
+                lostDefaults.forEach(lost => {
+                    if (!quests.find(q => q.title === lost.title)) {
+                        changed = true;
+                        quests.push({ ...lost, isRecurring: true, completed: false });
+                        history = history.filter(h => h.id !== lost.id);
+                    }
+                });
+
+                // 3. Category Migration
+                if (quests.some(q => ['GERAL', 'ALIMENTAÇÃO', 'ARENA'].includes(q.category))) {
+                    changed = true;
+                    quests = quests.map(q => {
+                        let u = { ...q };
+                        if (q.category === 'GERAL') u.category = 'HÁBITOS';
+                        if (q.category === 'ALIMENTAÇÃO') u.category = 'DIETA';
+                        if (q.category === 'ARENA') u.category = 'HÁBITOS';
+                        return u;
+                    });
+                }
+
+                if (changed) {
+                    const updatedProfile = { ...activeProfile, quests, completedHistory: history };
+                    // Update both to keep them in sync and stop the flickering
+                    setUser(updatedProfile);
+                    setProfiles(prev => prev.map(p => p.id === currentProfileId ? updatedProfile : p));
+                } else if (JSON.stringify(user) !== JSON.stringify(activeProfile)) {
+                    // Normal load without migration
+                    setUser(activeProfile);
+                }
             }
         }
-    }, [currentProfileId, profiles]);
+    }, [currentProfileId, profiles.length]); // Only run when profile changes or a new profile is added
 
     useEffect(() => {
         if (profiles.length > 0) {
@@ -357,16 +574,56 @@ export default function App() {
     useEffect(() => {
         const today = new Date().toLocaleDateString();
         if (user.onboarded && user.lastLoginDate !== today) {
-            setUser(prev => ({
-                ...prev,
-                lastLoginDate: today,
-                quests: prev.quests.map(q => ({ ...q, completed: false })),
-                energy: 0,
-                water: 0
-            }));
+            setUser(prev => {
+                let hpPenalty = 0;
+                const parseDate = (str) => {
+                    const [d, m, y] = str.split('/');
+                    return new Date(y, m - 1, d);
+                };
+
+                const now = new Date();
+                prev.quests.forEach(q => {
+                    if (q.category === 'SAÚDE') {
+                        const history = q.completedDates || [];
+                        const lastDateStr = history.length > 0 ? history[history.length - 1] : null;
+
+                        if (lastDateStr) {
+                            const lastDate = parseDate(lastDateStr);
+                            const diffTime = Math.abs(now - lastDate);
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                            if (diffDays > 2) {
+                                hpPenalty += (diffDays - 2) * 10; // 10 HP por dia de atraso após o 2º dia
+                            }
+                        } else {
+                            // Nunca completou, checar desde a criação
+                            const created = new Date(q.createdAt || Date.now());
+                            const diffTime = Math.abs(now - created);
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                            if (diffDays > 2) {
+                                hpPenalty += (diffDays - 2) * 10;
+                            }
+                        }
+                    }
+                });
+
+                if (hpPenalty > 0) {
+                    alert(`⚠️ Você negligenciou missões de SAÚDE! Perdeu ${hpPenalty} HP.`);
+                }
+
+                return {
+                    ...prev,
+                    hp: Math.max(0, prev.hp - hpPenalty),
+                    lastLoginDate: today,
+                    quests: prev.quests.map(q => ({ ...q, completed: false })),
+                    energy: 0,
+                    water: 0,
+                    dailyMealPlan: [],
+                    mealDone: []
+                };
+            });
             setWorkoutDone([]);
         }
-    }, []);
+    }, [user.onboarded, user.lastLoginDate]);
 
     const handleOnboardingComplete = (data) => {
         const medQuests = data.medications.map(med => ({
@@ -375,9 +632,11 @@ export default function App() {
             desc: `Horário: ${med.time}. Manter a saúde é essencial para o herói.`,
             category: 'SAÚDE',
             time: med.time,
-            xpReward: 20,
+            xpReward: 0,
             goldReward: 10,
             completed: false,
+            isRecurring: true,
+            priority: 'Normal',
             createdAt: Date.now()
         }));
 
@@ -385,7 +644,7 @@ export default function App() {
             ...INITIAL_USER,
             ...data,
             id: `profile-${Date.now()}`,
-            quests: [...INITIAL_USER.quests, ...medQuests],
+            quests: [...(data.useDefaultQuests ? INITIAL_USER.quests : []), ...medQuests],
             onboarded: true
         };
 
@@ -394,29 +653,202 @@ export default function App() {
         setIsCreatingProfile(false);
     }
 
-    const handleComplete = (id) => {
-        setCompletingQuestId(id);
+    const moveQuest = (id, direction) => {
+        setUser(prev => {
+            const quests = [...prev.quests];
+            const pMap = { 'Alta': 3, 'Média': 2, 'Normal': 1, 'Sem prioridade': 0 };
+
+            // Garantir que todos tenham um order inicial
+            quests.forEach((q, i) => {
+                if (q.order === undefined) q.order = i;
+            });
+
+            const sortedQuests = [...quests].sort((a, b) => {
+                const priorityDiff = (pMap[b.priority] || 0) - (pMap[a.priority] || 0);
+                if (priorityDiff !== 0) return priorityDiff;
+                return (a.order || 0) - (b.order || 0);
+            });
+
+            const index = sortedQuests.findIndex(q => q.id === id);
+            if (index === -1) return prev;
+
+            const targetIndex = direction === 'up' ? index - 1 : index + 1;
+            if (targetIndex < 0 || targetIndex >= sortedQuests.length) return prev;
+
+            const current = sortedQuests[index];
+            const target = sortedQuests[targetIndex];
+
+            // Regra: Não pode pular níveis de prioridade (mantém grupos)
+            if (pMap[current.priority] !== pMap[target.priority]) return prev;
+
+            // Swap order
+            const tempOrder = current.order;
+            current.order = target.order;
+            target.order = tempOrder;
+
+            return { ...prev, quests: [...quests] };
+        });
+    }
+
+    const updateQuestPriority = (id, currentPriority) => {
+        const priorities = ['Sem prioridade', 'Normal', 'Média', 'Alta'];
+        const currentIndex = priorities.indexOf(currentPriority);
+        const nextIndex = (currentIndex + 1) % priorities.length;
+        const newPriority = priorities[nextIndex];
+
+        setUser(prev => ({
+            ...prev,
+            quests: prev.quests.map(q => q.id === id ? { ...q, priority: newPriority } : q)
+        }));
+    };
+
+    const handleDragStart = (id) => {
+        setDraggedItemId(id);
+    }
+
+    const handleDragOver = (e, id) => {
+        e.preventDefault();
+        setDragOverId(id);
+        e.dataTransfer.dropEffect = "move";
+    }
+
+    const handleDrop = (targetId) => {
+        setDragOverId(null);
+        if (!draggedItemId || draggedItemId === targetId) return;
+
+        setUser(prev => {
+            const quests = [...prev.quests];
+            const pMap = { 'Alta': 3, 'Média': 2, 'Normal': 1, 'Sem prioridade': 0 };
+
+            quests.forEach((q, i) => { if (q.order === undefined) q.order = i; });
+
+            const sortedQuests = [...quests].sort((a, b) => {
+                const priorityDiff = (pMap[b.priority] || 0) - (pMap[a.priority] || 0);
+                if (priorityDiff !== 0) return priorityDiff;
+                return (a.order || 0) - (b.order || 0);
+            });
+
+            const draggedIdx = sortedQuests.findIndex(q => q.id === draggedItemId);
+            const targetIdx = sortedQuests.findIndex(q => q.id === targetId);
+
+            if (draggedIdx === -1 || targetIdx === -1) return prev;
+            if (pMap[sortedQuests[draggedIdx].priority] !== pMap[sortedQuests[targetIdx].priority]) return prev;
+
+            const [draggedItem] = sortedQuests.splice(draggedIdx, 1);
+            sortedQuests.splice(targetIdx, 0, draggedItem);
+
+            sortedQuests.forEach((q, i) => { q.order = i; });
+
+            setLastDroppedId(draggedItemId);
+            setTimeout(() => setLastDroppedId(null), 1000);
+
+            return { ...prev, quests: [...quests] };
+        });
+        setDraggedItemId(null);
+    }
+
+    const deleteProfile = (e, id) => {
+        e.stopPropagation();
+        setProfileToDelete(id);
+    }
+
+    const confirmDeleteProfile = () => {
+        if (!profileToDelete) return;
+        const updatedProfiles = profiles.filter(p => p.id !== profileToDelete);
+        setProfiles(updatedProfiles);
+        localStorage.setItem('life-level-profiles-v1', JSON.stringify(updatedProfiles));
+        if (currentProfileId === profileToDelete) {
+            setCurrentProfileId(null);
+        }
+        setProfileToDelete(null);
+    }
+
+    const handleComplete = (id, dateKey = new Date().toLocaleDateString()) => {
+        setCompletingQuestId(`${id}-${dateKey}`);
 
         // Wait for animation to finish before updating state
         setTimeout(() => {
             setUser(prev => {
                 const q = prev.quests.find(x => x.id === id)
-                if (!q || q.completed) return prev
-                let nxp = prev.xp + q.xpReward
-                let nlvl = prev.level
-                let nmaxXp = prev.maxXp
-                if (nxp >= prev.maxXp) {
-                    nlvl++
-                    nxp -= prev.maxXp
-                    nmaxXp = Math.floor(prev.maxXp * 1.5)
-                }
-                return {
-                    ...prev,
-                    xp: nxp,
-                    level: nlvl,
-                    maxXp: nmaxXp,
-                    gold: prev.gold + q.goldReward,
-                    quests: prev.quests.map(x => x.id === id ? { ...x, completed: true } : x)
+                if (!q) return prev
+
+                const completedDates = q.completedDates || [];
+                const isAlreadyCompleted = completedDates.includes(dateKey);
+
+                let nxp, nlvl, nmaxXp, ngold;
+
+                if (isAlreadyCompleted) {
+                    // Toggle OFF: Remove date and subtract rewards
+                    nxp = prev.xp - q.xpReward
+                    nlvl = prev.level
+                    nmaxXp = prev.maxXp
+                    ngold = prev.gold - q.goldReward
+
+                    // Handle level down if XP goes negative
+                    if (nxp < 0 && nlvl > 1) {
+                        nlvl--
+                        nmaxXp = Math.floor(prev.maxXp / 1.5)
+                        nxp = nmaxXp + nxp
+                    } else if (nxp < 0) {
+                        nxp = 0
+                    }
+
+                    return {
+                        ...prev,
+                        xp: nxp,
+                        level: nlvl,
+                        maxXp: nmaxXp,
+                        gold: Math.max(0, ngold),
+                        quests: prev.quests.map(x => x.id === id ? {
+                            ...x,
+                            completedDates: completedDates.filter(d => d !== dateKey),
+                            completed: dateKey === new Date().toLocaleDateString() ? false : x.completed
+                        } : x)
+                    }
+                } else {
+                    const isHealthQuest = q.category === 'SAÚDE';
+                    const xpToGrant = isHealthQuest ? 0 : q.xpReward;
+
+                    // Toggle ON: Add date and add rewards
+                    nxp = prev.xp + xpToGrant
+                    nlvl = prev.level
+                    nmaxXp = prev.maxXp
+                    if (nxp >= prev.maxXp) {
+                        nlvl++
+                        nxp -= prev.maxXp
+                        nmaxXp = Math.floor(prev.maxXp * 1.5)
+                    }
+
+                    if (q.isRecurring === false) {
+                        // Move non-recurring task to history and remove from active quests
+                        const completedQuest = {
+                            ...q,
+                            completedDates: [...completedDates, dateKey],
+                            completed: true
+                        };
+                        return {
+                            ...prev,
+                            xp: nxp,
+                            level: nlvl,
+                            maxXp: nmaxXp,
+                            gold: prev.gold + q.goldReward,
+                            quests: prev.quests.filter(x => x.id !== id),
+                            completedHistory: [...(prev.completedHistory || []), completedQuest]
+                        }
+                    }
+
+                    return {
+                        ...prev,
+                        xp: nxp,
+                        level: nlvl,
+                        maxXp: nmaxXp,
+                        gold: prev.gold + q.goldReward,
+                        quests: prev.quests.map(x => x.id === id ? {
+                            ...x,
+                            completedDates: [...completedDates, dateKey],
+                            completed: dateKey === new Date().toLocaleDateString() ? true : x.completed
+                        } : x)
+                    }
                 }
             });
             setCompletingQuestId(null);
@@ -426,6 +858,58 @@ export default function App() {
     const addWater = (amount) => {
         setUser(prev => ({ ...prev, water: Math.min(prev.water + amount, prev.maxWater) }))
     }
+
+    const toggleMeal = (idx) => {
+        setUser(u => {
+            const mealDone = u.mealDone || [];
+            const isDone = mealDone.includes(idx);
+            const meal = (u.dailyMealPlan || [])[idx];
+            const calories = meal?.cals || 0;
+
+            const newMealDone = isDone
+                ? mealDone.filter(i => i !== idx)
+                : [...mealDone, idx];
+
+            return {
+                ...u,
+                energy: isDone ? Math.max(0, u.energy - calories) : Math.min(u.maxEnergy, u.energy + calories),
+                mealDone: newMealDone
+            };
+        });
+    }
+
+    const calculateAICals = (title, desc) => {
+        // Simulação de IA: Analisa palavras chave para estimar calorias
+        const text = (title + ' ' + desc).toLowerCase();
+        let base = 200;
+        if (text.includes('pão')) base += 150;
+        if (text.includes('ovo')) base += 80;
+        if (text.includes('frango')) base += 250;
+        if (text.includes('carne')) base += 350;
+        if (text.includes('arroz')) base += 200;
+        if (text.includes('salada')) base -= 100;
+        if (text.includes('whey')) base += 120;
+        if (text.includes('fatia')) base += 50;
+        return Math.max(50, base + Math.floor(Math.random() * 50));
+    };
+
+    const addManualMeal = (e) => {
+        e.preventDefault();
+        const estimatedCals = calculateAICals(newMealData.title, newMealData.desc);
+        const newMeal = {
+            time: newMealData.time,
+            name: newMealData.title,
+            selectedItem: newMealData.desc,
+            cals: estimatedCals,
+            isManual: true
+        };
+        setUser(prev => ({
+            ...prev,
+            dailyMealPlan: [...(prev.dailyMealPlan || []), newMeal].sort((a, b) => a.time.localeCompare(b.time))
+        }));
+        setShowNewMealModal(false);
+        setNewMealData({ title: '', desc: '', time: '08:00' });
+    };
 
     const getQuestColor = (xp) => {
         if (xp <= 10) return '#06b6d4' // Common
@@ -440,57 +924,102 @@ export default function App() {
 
     if (!currentProfileId && !isCreatingProfile) {
         return (
-            <div className="min-h-screen flex items-center justify-center p-4 bg-deep">
-                <div className="w-full max-w-xl animate-slide-up">
-                    <div className="premium-card glass text-center border-violet">
-                        <div className="flex justify-center mb-6">
-                            <div className="w-20 h-20 rounded-2xl bg-violet/20 border border-violet/40 flex items-center justify-center text-violet">
-                                <Users size={40} />
-                            </div>
-                        </div>
-                        <h2 className="font-pixel text-sm mb-2 text-white">QUEM ENTRARÁ NA GUILDA?</h2>
-                        <p className="text-xs text-dim mb-8">SELECIONE SEU HERÓI OU CRIE UMA NOVA JORNADA</p>
-
-                        <div className="grid gap-4 mb-8">
-                            {profiles.map(profile => (
-                                <div
-                                    key={profile.id}
-                                    onClick={() => setCurrentProfileId(profile.id)}
-                                    className="selectable-card group"
-                                >
-                                    <div className="w-12 h-12 rounded-xl border border-border overflow-hidden bg-surface">
-                                        <img src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${profile.name}`} alt="Avatar" />
-                                    </div>
-                                    <div className="flex-1 text-left">
-                                        <h4 className="font-pixel text-[9px] text-white uppercase">{profile.name}</h4>
-                                        <p className="text-[7px] text-dim uppercase">NÍVEL {profile.level} • {profile.characterClass}</p>
-                                    </div>
-                                    <div className="text-violet opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <TrendingUp size={16} />
-                                    </div>
+            <>
+                <div className="min-h-screen flex items-center justify-center p-4 bg-deep">
+                    <div className="w-full max-w-xl animate-slide-up">
+                        <div className="premium-card glass text-center border-violet">
+                            <div className="flex justify-center mb-6">
+                                <div className="w-20 h-20 rounded-2xl bg-violet/20 border border-violet/40 flex items-center justify-center text-violet">
+                                    <Users size={40} />
                                 </div>
-                            ))}
+                            </div>
+                            <h2 className="font-pixel text-sm mb-2 text-white">QUEM ENTRARÁ NA GUILDA?</h2>
+                            <p className="text-xs text-dim mb-8">SELECIONE SEU HERÓI OU CRIE UMA NOVA JORNADA</p>
 
-                            <button
-                                onClick={() => setIsCreatingProfile(true)}
-                                className="w-full py-6 border-2 border-dashed border-violet/30 rounded-2xl flex flex-col items-center gap-2 hover:bg-violet/5 hover:border-violet/60 transition-all text-violet"
-                            >
-                                <Plus size={24} />
-                                <span className="font-pixel text-[8px]">NOVO PERSONAGEM</span>
-                            </button>
+                            <div className="grid gap-4 mb-8">
+                                {profiles.map(profile => (
+                                    <div
+                                        key={profile.id}
+                                        onClick={() => setCurrentProfileId(profile.id)}
+                                        className="selectable-card group"
+                                    >
+                                        <div className="w-12 h-12 rounded-xl border border-border overflow-hidden bg-surface">
+                                            <img src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${profile.name}`} alt="Avatar" />
+                                        </div>
+                                        <div className="flex-1 text-left">
+                                            <h4 className="font-pixel text-xs text-white uppercase">{profile.name}</h4>
+                                            <p className="font-pixel text-violet uppercase" style={{ fontSize: 'var(--fs-micro)' }}>NÍVEL {profile.level} • {profile.characterClass}</p>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <div className="text-violet opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <TrendingUp size={16} />
+                                            </div>
+                                            <button
+                                                onClick={(e) => deleteProfile(e, profile.id)}
+                                                className="p-2 text-hp-red opacity-30 hover:opacity-100 hover:bg-hp-red/10 rounded-lg transition-all"
+                                                title="Banir Herói"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <button
+                                    onClick={() => setIsCreatingProfile(true)}
+                                    className="btn-primary w-full py-6 flex flex-col items-center gap-2"
+                                >
+                                    <Plus size={24} />
+                                    <span>NOVO PERSONAGEM</span>
+                                </button>
+                            </div>
+
+                            {profiles.length > 0 && (
+                                <button
+                                    onClick={() => { if (confirm('Resetar tudo?')) { localStorage.clear(); window.location.reload(); } }}
+                                    className="btn-danger w-full mt-4 !py-3 !text-[10px]"
+                                >
+                                    Limpar Todos os Registros
+                                </button>
+                            )}
                         </div>
-
-                        {profiles.length > 0 && (
-                            <button
-                                onClick={() => { if (confirm('Resetar tudo?')) { localStorage.clear(); window.location.reload(); } }}
-                                className="text-[7px] font-pixel text-hp-red opacity-30 hover:opacity-100 transition-opacity uppercase tracking-widest"
-                            >
-                                Limpar Todos os Registros
-                            </button>
-                        )}
                     </div>
                 </div>
-            </div>
+                {/* Modal de Confirmação de Exclusão */}
+                {profileToDelete && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+                        <div className="w-full max-w-sm animate-scale-up">
+                            <div className="premium-card glass border-hp-red/50 text-center p-8">
+                                <div className="flex justify-center mb-6">
+                                    <div className="w-16 h-16 rounded-full bg-hp-red/10 border border-hp-red/30 flex items-center justify-center text-hp-red animate-pulse">
+                                        <Skull size={32} />
+                                    </div>
+                                </div>
+                                <h3 className="font-pixel text-[10px] text-white mb-4 uppercase tracking-widest leading-relaxed">
+                                    Banir Herói da Guilda?
+                                </h3>
+                                <p className="text-[8px] font-pixel text-dim mb-8 leading-relaxed uppercase">
+                                    Esta ação é irreversível. O herói e todo o seu progresso serão perdidos no abismo.
+                                </p>
+                                <div className="flex flex-col gap-3">
+                                    <button
+                                        onClick={confirmDeleteProfile}
+                                        className="btn-danger w-full !py-4"
+                                    >
+                                        Confirmar Banimento
+                                    </button>
+                                    <button
+                                        onClick={() => setProfileToDelete(null)}
+                                        className="btn-action w-full !py-4"
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </>
         );
     }
 
@@ -519,20 +1048,28 @@ export default function App() {
 
     const addNewQuest = (e) => {
         e.preventDefault();
-        if (!newQuestData.title || !newQuestData.time) return alert('Preencha todos os campos!');
+        if (!newQuestData.title) return alert('Dê um nome à sua missão!');
 
-        const timeInMinutes = parseInt(newQuestData.time) || 30;
-        let xp = 10;
-        if (timeInMinutes > 60) xp += 15;
-        if (timeInMinutes > 120) xp += 25;
-        if (newQuestData.title.toLowerCase().includes('estudar') || newQuestData.title.toLowerCase().includes('aprender')) xp += 10;
+        const effort = parseInt(newQuestData.difficulty);
+        const duration = parseInt(newQuestData.time) || 30;
+
+        // XP Reward based on effort level and duration
+        let xp = 10 + (effort * 5) + Math.floor(duration / 10);
+        let gold = effort * 3;
 
         const newQuest = {
             id: Date.now(),
             title: newQuestData.title,
-            desc: `Objetivo definido pelo jogador: ${newQuestData.title}`,
-            time: `${timeInMinutes}min`,
+            desc: newQuestData.desc || `Objetivo: ${newQuestData.title}`,
+            time: `${duration}min`,
+            category: newQuestData.category,
+            isRecurring: newQuestData.isRecurring,
+            targetDate: newQuestData.targetDate,
+            priority: newQuestData.priority,
+            createdAt: Date.now(),
             xpReward: xp,
+            goldReward: gold,
+            completedDates: [],
             completed: false
         };
 
@@ -542,11 +1079,20 @@ export default function App() {
         }));
 
         setShowNewQuestModal(false);
-        setNewQuestData({ title: '', time: '' });
+        setNewQuestData({
+            title: '',
+            desc: '',
+            time: '30',
+            category: 'HÁBITOS',
+            targetDate: newQuestData.targetDate,
+            isRecurring: false,
+            difficulty: 5,
+            priority: 'Normal'
+        });
     }
 
     return (
-        <div className="flex-1 p-4 md:p-8 mb-20 min-h-screen bg-deep overflow-x-hidden">
+        <div className="flex-1 p-4 md:p-8 pb-40 min-h-screen bg-deep overflow-x-hidden">
             <div className="container mx-auto">
                 {activeTab === 'inicio' && (
                     <>
@@ -562,10 +1108,10 @@ export default function App() {
                                     <span className="text-violet text-sm">/ {user.characterClass}</span>
                                     <button
                                         onClick={() => setCurrentProfileId(null)}
-                                        className="text-[10px] text-violet opacity-30 hover:opacity-100 transition-opacity flex items-center gap-1 font-pixel cursor-pointer ml-auto"
+                                        className="text-xs text-violet opacity-30 hover:opacity-100 transition-opacity flex items-center gap-1 font-pixel cursor-pointer ml-auto"
                                         title="Trocar Personagem"
                                     >
-                                        <Users size={10} /> TROCAR
+                                        <Users size={12} /> TROCAR
                                     </button>
                                 </h1>
 
@@ -575,7 +1121,7 @@ export default function App() {
                                         <span>{user.hp}/{user.maxHp}</span>
                                     </div>
                                     <div className="bar-outer">
-                                        <div className="bar-inner bg-hp" style={{ width: '100%' }} />
+                                        <div className="bar-inner bg-hp" style={{ width: `${(user.hp / user.maxHp) * 100}%` }} />
                                     </div>
                                 </div>
 
@@ -592,14 +1138,14 @@ export default function App() {
 
                             <div className="flex gap-4">
                                 <div className="text-center">
-                                    <p className="text-[8px] font-pixel text-dim mb-1">OURO</p>
+                                    <p className="font-pixel text-dim mb-1" style={{ fontSize: 'var(--fs-micro)' }}>OURO</p>
                                     <div className="flex items-center gap-1">
                                         <Zap size={10} className="text-accent-gold" />
                                         <span className="text-sm font-pixel text-accent-gold">{user.gold}</span>
                                     </div>
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-[8px] font-pixel text-dim mb-1">COMBO</p>
+                                    <p className="font-pixel text-dim mb-1" style={{ fontSize: 'var(--fs-micro)' }}>COMBO</p>
                                     <div className="flex items-center gap-1">
                                         <Flame size={10} className="text-orange" />
                                         <span className="text-sm font-pixel text-orange">{user.combo}</span>
@@ -616,103 +1162,461 @@ export default function App() {
                             </div>
                             <div>
                                 <p className="text-sm italic">"O aço tempera a alma, aventureiro..."</p>
-                                <p className="text-[10px] uppercase font-bold text-violet mt-1 cursor-pointer hover:underline">REGENERAR SABEDORIA (GASTA MANA)</p>
+                                <p className="uppercase font-bold text-violet mt-1 cursor-pointer hover:underline" style={{ fontSize: 'var(--fs-micro)' }}>REGENERAR SABEDORIA (GASTA MANA)</p>
                             </div>
                         </div>
 
-                        {/* Main Content Grid */}
-                        <div className="grid grid-cols-1 lg-grid-cols-2 gap-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-                            <div>
+                        {/* Main Content Layout */}
+                        <div className="flex flex-col gap-12 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                            {/* Top Section: Full Width Habit Tracker */}
+                            <div className="w-full">
                                 <div className="flex items-center justify-between mb-2">
                                     <h2 className="quest-list-title !mb-0">
-                                        <ClipboardList size={20} className="text-blue" /> QUESTS ATIVAS
+                                        <ClipboardList size={20} className="text-orange" /> HÁBITOS RECORRENTES
                                     </h2>
-                                    <button
-                                        onClick={() => setShowNewQuestModal(true)}
-                                        className="flex items-center gap-2 px-4 py-2 bg-blue/10 border border-blue/30 rounded-lg text-blue font-pixel text-[8px] hover:bg-blue/20 transition-all"
-                                    >
-                                        <Plus size={14} /> NOVA QUEST
-                                    </button>
                                 </div>
-                                <div className="space-y-4">
-                                    {user.quests.filter(q => !q.completed || q.id === completingQuestId).map(q => (
-                                        <div
-                                            key={q.id}
-                                            className={`quest-card ${completingQuestId === q.id ? 'quest-exit' : ''}`}
-                                            style={{ borderLeftColor: getQuestColor(q.xpReward) }}
-                                        >
-                                            <div className="quest-content">
-                                                <h3 className="flex flex-col items-start gap-1">
-                                                    <span className="flex items-center gap-2 text-sm sm:text-base">
-                                                        {q.title}
-                                                        {q.time && (
-                                                            <span className="text-[9px] bg-bg-surface px-2 py-0.5 rounded-full text-dim font-bold flex items-center gap-1">
-                                                                <Clock size={8} /> {q.time}
-                                                            </span>
-                                                        )}
-                                                    </span>
-                                                </h3>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <p className="text-[10px] sm:text-xs">{q.desc}</p>
-                                                    <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-surface border border-white/5 font-pixel text-[6px]" style={{ color: getQuestColor(q.xpReward) }}>
-                                                        +{q.xpReward} XP
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            {!q.completed && (
-                                                <div className="quest-actions">
-                                                    <button className="btn-icon">
-                                                        <Skull size={18} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => q.title === 'Treinar' ? setActiveTab('arena') : handleComplete(q.id)}
-                                                        className="btn-icon complete"
-                                                    >
-                                                        <Swords size={18} />
-                                                    </button>
-                                                </div>
+
+                                <div className="flex flex-wrap items-center justify-between gap-4 mt-6">
+                                    <div className="flex items-center gap-6">
+                                        <div className="flex items-center gap-4 bg-surface px-4 py-2 rounded-lg border border-border">
+                                            <button className="text-dim hover:text-orange text-lg transition-colors">‹</button>
+                                            <span className="font-pixel text-bright" style={{ fontSize: 'var(--fs-micro)' }}>FEVEREIRO DE 2026</span>
+                                            <button className="text-dim hover:text-orange text-lg transition-colors">›</button>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 bg-surface px-4 py-2 rounded-lg border border-border text-dim focus-within:border-orange/50 transition-all">
+                                            <Search size={14} className={searchQuery ? 'text-orange' : ''} />
+                                            <input
+                                                type="text"
+                                                placeholder="BUSCAR MISSÃO..."
+                                                className="bg-transparent border-none p-0 text-bright outline-none w-40 placeholder:opacity-30"
+                                                style={{ fontSize: 'var(--fs-micro)', fontFamily: 'var(--font-pixel)' }}
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                            />
+                                        </div>
+
+                                        <div className="flex items-center gap-2 bg-surface px-4 py-2 rounded-lg border border-border">
+                                            <Flag size={14} className={filterPriority !== 'Todas' ? 'text-blue' : 'text-dim'} />
+                                            <select
+                                                value={filterPriority}
+                                                onChange={(e) => setFilterPriority(e.target.value)}
+                                                className="bg-transparent border-none text-bright outline-none cursor-pointer font-pixel"
+                                                style={{ fontSize: 'var(--fs-micro)' }}
+                                            >
+                                                <option value="Todas" className="bg-[#0d1117]">TODAS PRIORIDADES</option>
+                                                <option value="Alta" className="bg-[#0d1117]">🔴 ALTA</option>
+                                                <option value="Média" className="bg-[#0d1117]">🟡 MÉDIA</option>
+                                                <option value="Normal" className="bg-[#0d1117]">🔵 NORMAL</option>
+                                                <option value="Sem prioridade" className="bg-[#0d1117]">⚪ NENHUMA</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 bg-surface px-4 py-2 rounded-lg border border-border">
+                                            <Calendar size={14} className={filterDate ? 'text-orange' : 'text-dim'} />
+                                            <input
+                                                type="date"
+                                                value={filterDate}
+                                                onChange={(e) => setFilterDate(e.target.value)}
+                                                className="bg-transparent border-none text-bright outline-none cursor-pointer font-pixel"
+                                                style={{ fontSize: 'var(--fs-micro)' }}
+                                            />
+                                            {filterDate && (
+                                                <button onClick={() => setFilterDate('')} className="text-dim hover:text-white transition-colors">
+                                                    <RotateCcw size={12} />
+                                                </button>
                                             )}
                                         </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                        {(searchQuery || filterPriority !== 'Todas' || filterDate) && (
+                                            <button
+                                                onClick={() => {
+                                                    setSearchQuery('');
+                                                    setFilterPriority('Todas');
+                                                    setFilterDate('');
+                                                }}
+                                                className="btn-action"
+                                                style={{ padding: '8px 16px', fontSize: 'var(--fs-micro)' }}
+                                            >
+                                                LIMPAR FILTROS
+                                            </button>
+                                        )}
+
+                                        <button
+                                            onClick={() => setShowNewQuestModal(true)}
+                                            className="btn-primary"
+                                            style={{ padding: '8px 20px', fontSize: 'var(--fs-micro)' }}
+                                        >
+                                            <Plus size={14} /> NOVA MISSÃO
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div className="habit-table-container">
+                                <table className="habit-table">
+                                    <thead>
+                                        <tr>
+                                            <th>MISSÃO / HÁBITO</th>
+                                            {(() => {
+                                                const days = [];
+                                                const today = new Date();
+                                                for (let i = -3; i <= 4; i++) {
+                                                    const targetDate = new Date();
+                                                    targetDate.setDate(today.getDate() + i);
+                                                    days.push({
+                                                        name: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'][targetDate.getDay()],
+                                                        number: targetDate.getDate(),
+                                                        dateKey: targetDate.toLocaleDateString(),
+                                                        isToday: i === 0
+                                                    });
+                                                }
+                                                return days.map((day, i) => (
+                                                    <th key={i} className={`day-col ${day.isToday ? 'th-highlight' : ''}`}>
+                                                        <div className={`day-header-container ${day.isToday ? 'is-today' : ''}`}>
+                                                            <span className="day-name">{day.name}</span>
+                                                            <span className="day-number">{day.number}</span>
+                                                        </div>
+                                                    </th>
+                                                ));
+                                            })()}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {user.quests
+                                            .filter(q => {
+                                                const query = searchQuery.trim().toLowerCase();
+                                                const matchesSearch = !query ||
+                                                    q.title.toLowerCase().includes(query) ||
+                                                    (q.desc || '').toLowerCase().includes(query) ||
+                                                    (q.category || '').toLowerCase().includes(query);
+
+                                                const matchesPriority = filterPriority === 'Todas' || q.priority === filterPriority;
+
+                                                // Improved Date Logic: Recurring tasks always show (since they're daily), 
+                                                // while one-off quests follow the date filter.
+                                                const matchesDate = !filterDate || q.isRecurring || q.targetDate === filterDate;
+
+                                                return matchesSearch && matchesPriority && matchesDate;
+                                            })
+                                            .sort((a, b) => {
+                                                const pMap = { 'Alta': 3, 'Média': 2, 'Normal': 1, 'Sem prioridade': 0 };
+                                                const priorityDiff = (pMap[b.priority] || 0) - (pMap[a.priority] || 0);
+                                                if (priorityDiff !== 0) return priorityDiff;
+                                                return (a.order || 0) - (b.order || 0);
+                                            })
+                                            .map(q => {
+                                                const today = new Date();
+                                                const questsCompletedDates = q.completedDates || [];
+                                                const isHighlighted = highlightedQuestId === q.id;
+                                                return (
+                                                    <tr
+                                                        key={q.id}
+                                                        className={`
+                                                            ${isHighlighted ? 'quest-highlighted' : ''} 
+                                                            ${draggedItemId === q.id ? 'drag-item-active' : ''} 
+                                                            ${dragOverId === q.id && draggedItemId !== q.id ? 'drag-over-target' : ''}
+                                                            ${lastDroppedId === q.id ? 'drop-success-anim' : ''}
+                                                            cursor-grab active:cursor-grabbing transition-all hover:bg-white/[0.02]
+                                                        `}
+                                                        draggable
+                                                        onDragStart={() => handleDragStart(q.id)}
+                                                        onDragOver={(e) => handleDragOver(e, q.id)}
+                                                        onDrop={() => handleDrop(q.id)}
+                                                        onDragLeave={() => setDragOverId(null)}
+                                                        onDragEnd={() => { setDraggedItemId(null); setDragOverId(null); }}
+                                                    >
+                                                        <td>
+                                                            <div className="habit-task-info">
+                                                                <div className="flex flex-col gap-1.5">
+                                                                    <div className="flex flex-wrap items-center gap-2">
+                                                                        <div className="text-dim/30 hover:text-white cursor-grab active:cursor-grabbing p-1 -ml-1">
+                                                                            <GripVertical size={12} />
+                                                                        </div>
+                                                                        <span className={`habit-task-name transition-all ${questsCompletedDates.includes(new Date().toLocaleDateString()) ? 'opacity-30 line-through text-dim' : ''}`}>{q.title}</span>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <div className="flex items-center bg-white/5 rounded-[4px] border border-white/10 p-0.5">
+                                                                                <button
+                                                                                    onClick={() => moveQuest(q.id, 'up')}
+                                                                                    className="btn-ghost p-1 hover:text-white text-dim transition-colors"
+                                                                                    title="Subir"
+                                                                                >
+                                                                                    <ChevronUp size={10} />
+                                                                                </button>
+                                                                                <button
+                                                                                    onClick={() => moveQuest(q.id, 'down')}
+                                                                                    className="btn-ghost p-1 hover:text-white text-dim transition-colors"
+                                                                                    title="Descer"
+                                                                                >
+                                                                                    <ChevronDown size={10} />
+                                                                                </button>
+                                                                            </div>
+
+                                                                            <button
+                                                                                onClick={() => updateQuestPriority(q.id, q.priority)}
+                                                                                className="btn-ghost hover:scale-105 active:scale-95 transition-transform"
+                                                                                title="Ciclar Prioridade"
+                                                                            >
+                                                                                {(() => {
+                                                                                    const pMap = {
+                                                                                        'Alta': 'alta',
+                                                                                        'Média': 'media',
+                                                                                        'Normal': 'normal',
+                                                                                        'Sem prioridade': 'none'
+                                                                                    };
+                                                                                    return (
+                                                                                        <div className={`priority-tag ${pMap[q.priority || 'Normal']}`}>
+                                                                                            <Flag size={9} fill="currentColor" />
+                                                                                            {q.priority?.toUpperCase() || 'NORMAL'}
+                                                                                        </div>
+                                                                                    );
+                                                                                })()}
+                                                                            </button>
+                                                                            {q.category && (
+                                                                                <span className={`category-pill ${q.category === 'HÁBITOS' ? 'habitos' :
+                                                                                    q.category === 'TAREFAS' ? 'tarefas' :
+                                                                                        q.category === 'HIGIENE' ? 'higiene' :
+                                                                                            q.category === 'DIETA' ? 'dieta' :
+                                                                                                q.category === 'SAÚDE' ? 'saude' : 'outros'
+                                                                                    }`}>{q.category}</span>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {q.desc && q.desc !== q.title && (
+                                                                        <span className="text-[14px] text-dim/70 leading-relaxed italic">{q.desc}</span>
+                                                                    )}
+
+                                                                    <div className="flex items-center gap-3">
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                setUser(prev => ({
+                                                                                    ...prev,
+                                                                                    quests: prev.quests.map(x => x.id === q.id ? { ...x, isRecurring: !x.isRecurring } : x)
+                                                                                }));
+                                                                            }}
+                                                                            className={`status-badge ${q.isRecurring ? 'recorrente' : 'unica'}`}
+                                                                        >
+                                                                            {q.isRecurring ? '🔄 RECORRENTE' : '📍 MISSÃO ÚNICA'}
+                                                                        </button>
+                                                                        {!q.isRecurring && q.targetDate && (
+                                                                            <div className="status-badge neutral">
+                                                                                <Clock size={12} />
+                                                                                ENTREGA: {q.targetDate.split('-').reverse().join('/')}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        {(() => {
+                                                            const cells = [];
+                                                            for (let i = -3; i <= 4; i++) {
+                                                                const d = new Date();
+                                                                d.setDate(today.getDate() + i);
+                                                                const dateKey = d.toLocaleDateString();
+                                                                const dIso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                                                                const isToday = i === 0;
+                                                                const isCompleted = questsCompletedDates.includes(dateKey);
+                                                                const cellId = `${q.id}-${dateKey}`;
+                                                                // Show if it's recurring, or matches the date, or if it's a legacy/default task without a date
+                                                                const shouldShow = q.isRecurring || q.targetDate === dIso || !q.targetDate;
+
+                                                                cells.push(
+                                                                    <td key={i} className={`day-cell ${isToday ? 'day-col-highlight' : ''}`}>
+                                                                        {shouldShow ? (
+                                                                            <div
+                                                                                onClick={() => {
+                                                                                    if (q.title === 'Treinar' && isToday && !isCompleted) {
+                                                                                        setActiveTab('arena');
+                                                                                    } else {
+                                                                                        handleComplete(q.id, dateKey);
+                                                                                    }
+                                                                                }}
+                                                                                className={`habit-checkbox ${isCompleted ? 'completed' : ''} ${completingQuestId === cellId ? 'animate-pulse' : ''}`}
+                                                                            >
+                                                                                {isCompleted && <Check size={18} />}
+                                                                            </div>
+                                                                        ) : (
+                                                                            <div className="w-8 h-8 flex items-center justify-center opacity-10">
+                                                                                <div className="w-1 h-1 bg-white rounded-full" />
+                                                                            </div>
+                                                                        )}
+                                                                    </td>
+                                                                );
+                                                            }
+                                                            return cells;
+                                                        })()}
+                                                    </tr>
+                                                );
+                                            })}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Dashboard Header with Filters */}
+                            <div className="flex items-center justify-between mb-6 mt-12 border-b border-white/5 pb-4">
+                                <h3 className="font-pixel text-orange tracking-[2px]" style={{ fontSize: 'var(--fs-small)' }}>ANÁLISE DE PERFORMANCE</h3>
+                                <div className="dashboard-filter-container">
+                                    {[7, 30].map(p => (
+                                        <button
+                                            key={p}
+                                            onClick={() => setDashboardPeriod(p)}
+                                            className={`dashboard-filter-btn ${dashboardPeriod === p ? 'active' : ''}`}
+                                        >
+                                            ÚLTIMOS {p} DIAS
+                                        </button>
                                     ))}
                                 </div>
                             </div>
 
-                            <div className="space-y-6">
-                                <div className="stat-widget">
-                                    <div className="stat-widget-header">
-                                        <h3 className="stat-title text-orange"><Flame size={14} /> ENERGIA</h3>
-                                        <span className="stat-value">{user.energy} / {user.maxEnergy} KCAL</span>
+                            {/* Dashboard Blocks Grid */}
+                            <div className="dashboard-grid animate-slide-up !mt-0">
+                                {(() => {
+                                    const quests = user.quests || [];
+                                    const historyQuests = user.completedHistory || [];
+
+                                    const getStatsForDate = (dateObj) => {
+                                        const dKey = dateObj.toLocaleDateString();
+                                        const dIso = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+
+                                        const recurring = quests.filter(q => q.isRecurring);
+                                        const nonRecurActive = quests.filter(q => !q.isRecurring && q.targetDate === dIso);
+                                        const nonRecurHistory = historyQuests.filter(q => (q.completedDates || []).includes(dKey));
+
+                                        const total = recurring.length + nonRecurActive.length + nonRecurHistory.length;
+                                        const done = recurring.filter(q => (q.completedDates || []).includes(dKey)).length + nonRecurHistory.length;
+
+                                        return { total, done };
+                                    };
+
+                                    // 1. Score Total Hoje
+                                    const todayStats = getStatsForDate(new Date());
+                                    const todayQuests = todayStats.total;
+                                    const todayCompleted = todayStats.done;
+                                    const scoreHoje = todayQuests > 0 ? (todayCompleted / todayQuests) : 0;
+
+                                    // Stats for Period
+                                    const history = [];
+                                    for (let i = 0; i < dashboardPeriod; i++) {
+                                        const d = new Date();
+                                        d.setDate(d.getDate() - i);
+                                        const s = getStatsForDate(d);
+                                        history.push(s.total > 0 ? (s.done / s.total) : 0);
+                                    }
+
+                                    const avgPeriod = history.reduce((a, b) => a + b, 0) / history.length;
+                                    const bestPeriod = Math.max(...history);
+
+                                    return [
+                                        { label: 'SCORE TOTAL HOJE', value: `${Math.round(scoreHoje * 100)}%`, sub: 'MASTERY TOTAL', color: '#f5a623', percentage: scoreHoje },
+                                        { label: 'TAREFAS DE HOJE', value: `${todayCompleted}/${todayQuests}`, sub: 'QUESTS CONCLUÍDAS', color: '#0091ff', percentage: scoreHoje },
+                                        { label: `MÉDIA ${dashboardPeriod} DIAS`, value: `${Math.round(avgPeriod * 100)}%`, sub: 'CONSISTÊNCIA', color: '#6e56cf', percentage: avgPeriod },
+                                        { label: 'MELHOR DIA', value: `${Math.round(bestPeriod * 100)}%`, sub: 'RÉCORDE PESSOAL', color: '#2ed573', percentage: bestPeriod },
+                                    ].map(block => (
+                                        <div key={block.label} className="dashboard-card shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
+                                            <div className="progress-circle-container">
+                                                <svg className="progress-circle-svg" width="90" height="90">
+                                                    <circle className="progress-circle-bg" cx="45" cy="45" r="40" />
+                                                    <circle
+                                                        className="progress-circle-bar"
+                                                        cx="45" cy="45" r="40"
+                                                        stroke={block.color}
+                                                        strokeDasharray={2 * Math.PI * 40}
+                                                        strokeDashoffset={2 * Math.PI * 40 * (1 - block.percentage)}
+                                                        strokeLinecap="round"
+                                                    />
+                                                </svg>
+                                                <div className="progress-text">
+                                                    <span className="progress-value">{block.value}</span>
+                                                    <span className="progress-label">STATS</span>
+                                                </div>
+                                            </div>
+                                            <span className="card-title">{block.label}</span>
+                                            <span className="card-subtitle uppercase">{block.sub}</span>
+                                        </div>
+                                    ));
+                                })()}
+                            </div>
+
+                            {/* Bottom Section: Widgets Side-by-Side */}
+                            <div className="grid grid-cols-1 lg-grid-cols-3 gap-6">
+                                <div className="stat-widget !mb-0 shadow-[0_10px_30px_rgba(0,0,0,0.3)] !h-auto">
+                                    <div className="stat-widget-header mb-6">
+                                        <h3 className="stat-title text-orange"><Utensils size={16} /> ALQUIMIA</h3>
+                                        <span className="font-pixel text-dim" style={{ fontSize: 'var(--fs-micro)' }}>{user.energy} / {user.maxEnergy} KCAL</span>
                                     </div>
-                                    <div className="bar-outer bg-xp">
-                                        <div className="bar-inner bg-xp-fill" style={{ width: `${(user.energy / user.maxEnergy) * 100}%`, background: '#f76808' }} />
+                                    <div className="flex flex-col items-center w-full">
+                                        <div className="progress-circle-container !mb-4">
+                                            <svg className="progress-circle-svg" width="90" height="90">
+                                                <circle className="progress-circle-bg" cx="45" cy="45" r="40" />
+                                                <circle
+                                                    className="progress-circle-bar"
+                                                    cx="45" cy="45" r="40"
+                                                    stroke="#f76808"
+                                                    strokeDasharray={2 * Math.PI * 40}
+                                                    strokeDashoffset={2 * Math.PI * 40 * (1 - Math.min(1, user.energy / user.maxEnergy))}
+                                                    strokeLinecap="round"
+                                                    style={{ filter: 'drop-shadow(0 0 8px rgba(247, 104, 8, 0.4))' }}
+                                                />
+                                            </svg>
+                                            <div className="progress-text">
+                                                <span className="progress-value">{user.energy}</span>
+                                                <span className="progress-label">KCAL</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="w-full space-y-3 px-2">
+                                            <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                                <span className="text-[10px] font-pixel text-dim uppercase">Energia Alvo</span>
+                                                <span className="text-[12px] font-pixel text-orange">{user.maxEnergy}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                                <span className="text-[10px] font-pixel text-dim uppercase">Mana Líquida</span>
+                                                <span className="text-[12px] font-pixel text-blue">{user.maxWater}ML</span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-[10px] font-pixel text-dim uppercase">Objetivo</span>
+                                                <span className="text-[12px] font-pixel text-hp-red uppercase">{user.goals.includes('Emagrecer') ? 'Déficit' : user.goals.includes('Ganhar massa') ? 'Massa' : 'Manter'}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="stat-widget">
-                                    <div className="stat-widget-header mb-4">
-                                        <h3 className="stat-title text-violet"><Activity size={14} /> PROTOCOLO: {workoutType.toUpperCase()}</h3>
-                                        <span className="text-[8px] font-pixel text-dim">{workoutDone.length}/{WORKOUTS[workoutType].length}</span>
+                                <div className="stat-widget !mb-0">
+                                    <div className="stat-widget-header mb-6">
+                                        <h3 className="stat-title text-violet"><Activity size={16} /> PROTOCOLO: {workoutType.toUpperCase()}</h3>
+                                        <span className="font-pixel text-dim" style={{ fontSize: 'var(--fs-micro)' }}>{workoutDone.length}/{WORKOUTS[workoutType].length}</span>
                                     </div>
-                                    <div className="space-y-3 bg-deep rounded-xl p-3 border border-border/30">
+                                    <div className="space-y-1 bg-white/[0.02] rounded-2xl p-2 border border-white/5 backdrop-blur-sm">
                                         {WORKOUTS[workoutType].map(ex => (
                                             <div
                                                 key={ex.id}
                                                 onClick={() => toggleExercise(ex.id)}
-                                                className="flex items-center justify-between group cursor-pointer"
+                                                className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-300 ${workoutDone.includes(ex.id) ? 'bg-hp-red/5' : 'hover:bg-white/[0.05]'}`}
                                             >
-                                                <span className={`text-[10px] font-medium transition-colors ${workoutDone.includes(ex.id) ? 'text-dim line-through' : 'text-bright'}`}>
-                                                    {ex.name}
-                                                </span>
-                                                <div className={`w-4 h-4 border rounded flex items-center justify-center transition-all ${workoutDone.includes(ex.id) ? 'bg-violet border-violet' : 'border-border group-hover:border-violet/50'}`}>
-                                                    {workoutDone.includes(ex.id) && <Check size={10} className="text-white" />}
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${workoutDone.includes(ex.id) ? 'bg-violet border-violet shadow-[0_0_10px_rgba(110,86,207,0.3)]' : 'border-white/20'}`}>
+                                                        {workoutDone.includes(ex.id) && <Check size={12} className="text-white" />}
+                                                    </div>
+                                                    <span className={`text-[11px] font-pixel tracking-wide transition-all ${workoutDone.includes(ex.id) ? 'text-dim/40 line-through' : 'text-bright'}`}>
+                                                        {ex.name}
+                                                    </span>
                                                 </div>
+                                                {!workoutDone.includes(ex.id) && (
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-violet/30 animate-pulse" />
+                                                )}
                                             </div>
                                         ))}
                                     </div>
                                     <div className="btn-group mt-4 flex gap-2">
                                         <button
                                             onClick={finishWorkoutQuest}
-                                            className={`btn-action flex-1 ${isWorkoutComplete() ? '!border-violet !text-violet bg-violet/10 animate-pulse' : 'opacity-30 cursor-not-allowed'}`}
+                                            className={`btn-primary flex-1 ${isWorkoutComplete() ? 'animate-pulse' : 'opacity-30 cursor-not-allowed'}`}
+                                            disabled={!isWorkoutComplete()}
                                         >
                                             CONCLUIR TREINO
                                         </button>
@@ -720,15 +1624,15 @@ export default function App() {
                                             onClick={() => setShowFailModal(true)}
                                             className="btn-action flex-1 !text-hp-red !border-hp-red !opacity-50"
                                         >
-                                            FALHEI NA MISSÃO
+                                            FALHEI
                                         </button>
                                     </div>
                                 </div>
 
-                                <div className="stat-widget">
+                                <div className="stat-widget !mb-0">
                                     <div className="stat-widget-header">
-                                        <h3 className="stat-title text-blue"><Droplets size={14} /> VITALIDADE</h3>
-                                        <span className="stat-value">{user.water} / {user.maxWater} ML</span>
+                                        <h3 className="stat-title text-blue"><Droplets size={16} /> VITALIDADE</h3>
+                                        <span className="stat-value" style={{ fontSize: 'var(--fs-small)' }}>{user.water} / {user.maxWater} ML</span>
                                     </div>
                                     <div className="bar-outer bg-xp">
                                         <div className="bar-inner bg-xp-fill" style={{ width: `${(user.water / user.maxWater) * 100}%`, background: '#0091ff' }} />
@@ -741,6 +1645,248 @@ export default function App() {
                             </div>
                         </div>
                     </>
+                )}
+
+                {activeTab === 'dash' && (
+                    <div className="animate-slide-up pb-24 max-w-4xl mx-auto space-y-12">
+                        {/* Header Dash */}
+                        <div className="flex items-center justify-between mb-8">
+                            <div>
+                                <h2 className="font-pixel text-[20px] text-orange mb-2">SALA DE ANÁLISE</h2>
+                                <p className="font-pixel text-[10px] text-dim uppercase tracking-[2px]">Relatório de Performance do Guerreiro</p>
+                            </div>
+                            <div className="dashboard-filter-container">
+                                {[7, 30].map(p => (
+                                    <button
+                                        key={p}
+                                        onClick={() => setDashboardPeriod(p)}
+                                        className={`dashboard-filter-btn ${dashboardPeriod === p ? 'active' : ''}`}
+                                    >
+                                        {p} DIAS
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Stats Grid - Mantendo layout original da aba Início */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 !mt-0 !mb-0">
+                            {(() => {
+                                const quests = user.quests || [];
+                                const historyQuests = user.completedHistory || [];
+
+                                const getStatsForDate = (dateObj) => {
+                                    const dKey = dateObj.toLocaleDateString();
+                                    const dIso = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+
+                                    const recurring = quests.filter(q => q.isRecurring);
+                                    const nonRecurActive = quests.filter(q => !q.isRecurring && q.targetDate === dIso);
+                                    const nonRecurHistory = historyQuests.filter(q => (q.completedDates || []).includes(dKey));
+
+                                    const total = recurring.length + nonRecurActive.length + nonRecurHistory.length;
+                                    const done = recurring.filter(q => (q.completedDates || []).includes(dKey)).length + nonRecurHistory.length;
+
+                                    return { total, done };
+                                };
+
+                                const todayStats = getStatsForDate(new Date());
+                                const todayQuests = todayStats.total;
+                                const todayCompleted = todayStats.done;
+                                const scoreHoje = todayQuests > 0 ? (todayCompleted / todayQuests) : 0;
+
+                                const graphData = [];
+                                for (let i = dashboardPeriod - 1; i >= 0; i--) {
+                                    const d = new Date();
+                                    d.setDate(d.getDate() - i);
+                                    const s = getStatsForDate(d);
+                                    graphData.push({
+                                        name: d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+                                        performance: Math.round((s.total > 0 ? (s.done / s.total) : 0) * 100),
+                                        fullDate: d.toLocaleDateString()
+                                    });
+                                }
+
+                                const avgPeriod = graphData.reduce((a, b) => a + b.performance, 0) / graphData.length;
+                                const bestDay = Math.max(...graphData.map(d => d.performance));
+
+                                return (
+                                    <>
+                                        {[
+                                            { label: 'SCORE HOJE', value: `${Math.round(scoreHoje * 100)}%`, sub: 'MASTERY', color: '#f5a623', percentage: scoreHoje },
+                                            { label: 'CONCLUÍDAS', value: `${todayCompleted}/${todayQuests}`, sub: 'QUESTS', color: '#0091ff', percentage: scoreHoje },
+                                            { label: `MÉDIA ${dashboardPeriod}D`, value: `${Math.round(avgPeriod)}%`, sub: 'CONSISTÊNCIA', color: '#6e56cf', percentage: (avgPeriod / 100) },
+                                            { label: 'RÉCORDE', value: `${Math.round(bestDay)}%`, sub: 'PEAK', color: '#2ed573', percentage: (bestDay / 100) },
+                                        ].map(block => (
+                                            <div key={block.label} className="dashboard-card !p-4 border-white/5 hover:border-white/10 w-full">
+                                                <div className="progress-circle-container !w-16 !h-16 !mb-2">
+                                                    <svg className="progress-circle-svg" width="60" height="60">
+                                                        <circle className="progress-circle-bg" cx="30" cy="30" r="26" strokeWidth="4" />
+                                                        <circle
+                                                            className="progress-circle-bar"
+                                                            cx="30" cy="30" r="26"
+                                                            stroke={block.color}
+                                                            strokeWidth="4"
+                                                            strokeDasharray={2 * Math.PI * 26}
+                                                            strokeDashoffset={2 * Math.PI * 26 * (1 - block.percentage)}
+                                                            strokeLinecap="round"
+                                                        />
+                                                    </svg>
+                                                    <div className="progress-text">
+                                                        <span className="progress-value !text-[10px]">{block.value}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="mt-1">
+                                                    <div className="font-pixel text-[5px] text-dim uppercase tracking-widest">{block.sub}</div>
+                                                    <div className="font-pixel text-[7px] text-bright uppercase mt-0.5">{block.label}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                        {/* Gráfico de Performance */}
+                                        <div className="col-span-1 sm:col-span-2 lg:col-span-4 premium-card !p-6 md:!p-8 !bg-surface/30">
+                                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                                                <h3 className="font-pixel text-[7px] md:text-[8px] text-bright flex items-center gap-2 leading-tight">
+                                                    <Activity size={12} className="text-orange shrink-0" />
+                                                    <span>GRÁFICO DE CONSTÂNCIA</span>
+                                                </h3>
+                                                <div className="flex items-center gap-2 self-end md:self-auto">
+                                                    <div className="w-2 h-2 rounded-full bg-orange/40 animate-pulse"></div>
+                                                    <span className="text-[8px] text-dim font-pixel uppercase tracking-widest">Eficiência %</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="h-[250px] w-full">
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <AreaChart data={graphData}>
+                                                        <defs>
+                                                            <linearGradient id="colorPerf" x1="0" y1="0" x2="0" y2="1">
+                                                                <stop offset="5%" stopColor="#f5a623" stopOpacity={0.3} />
+                                                                <stop offset="95%" stopColor="#f5a623" stopOpacity={0} />
+                                                            </linearGradient>
+                                                        </defs>
+                                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                                                        <XAxis
+                                                            dataKey="name"
+                                                            axisLine={false}
+                                                            tickLine={false}
+                                                            tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8, fontFamily: 'var(--font-pixel)' }}
+                                                            dy={10}
+                                                        />
+                                                        <YAxis
+                                                            axisLine={false}
+                                                            tickLine={false}
+                                                            tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8, fontFamily: 'var(--font-pixel)' }}
+                                                            domain={[0, 100]}
+                                                        />
+                                                        <Tooltip
+                                                            contentStyle={{ backgroundColor: '#11141d', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontFamily: 'var(--font-pixel)', fontSize: '10px' }}
+                                                            itemStyle={{ color: '#f5a623' }}
+                                                            cursor={{ stroke: 'rgba(255,166,35,0.2)', strokeWidth: 2 }}
+                                                        />
+                                                        <Area
+                                                            type="monotone"
+                                                            dataKey="performance"
+                                                            stroke="#f5a623"
+                                                            strokeWidth={3}
+                                                            fillOpacity={1}
+                                                            fill="url(#colorPerf)"
+                                                        />
+                                                    </AreaChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </div>
+                                    </>
+                                );
+                            })()}
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'calendario' && (
+                    <div className="animate-slide-up calendar-container">
+                        <div className="flex items-center justify-between mb-8 px-4">
+                            <div>
+                                <h2 className="font-pixel text-[12px] text-orange mb-2">MAPA TEMPORAL</h2>
+                                <p className="font-pixel text-[7px] text-dim uppercase tracking-[2px]">Visão Estratégica do Mês</p>
+                            </div>
+                            <div className="flex items-center gap-4 bg-surface/30 p-2 rounded-2xl border border-white/5 font-pixel text-[8px]">
+                                <button
+                                    onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1))}
+                                    className="text-dim hover:text-orange text-lg px-2"
+                                >‹</button>
+                                <span className="uppercase">{calendarDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
+                                <button
+                                    onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1))}
+                                    className="text-dim hover:text-orange text-lg px-2"
+                                >›</button>
+                            </div>
+                        </div>
+
+                        <div className="premium-card !p-4 md:!p-6 !bg-surface/20 border-white/5 overflow-hidden">
+                            <div className="calendar-grid-header">
+                                {['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'].map(d => (
+                                    <div key={d} className="text-center font-pixel text-[6px] text-dim opacity-50">{d}</div>
+                                ))}
+                            </div>
+
+                            <div className="calendar-grid-days">
+                                {(() => {
+                                    const days = [];
+                                    const firstDay = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1);
+                                    const lastDay = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 0);
+
+                                    for (let i = 0; i < firstDay.getDay(); i++) {
+                                        days.push(<div key={`empty-${i}`} className="calendar-empty-cell" />);
+                                    }
+
+                                    for (let d = 1; d <= lastDay.getDate(); d++) {
+                                        const currentDayDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), d);
+                                        const dateKey = currentDayDate.toLocaleDateString();
+                                        const dateIso = `${currentDayDate.getFullYear()}-${String(currentDayDate.getMonth() + 1).padStart(2, '0')}-${String(currentDayDate.getDate()).padStart(2, '0')}`;
+                                        const isToday = new Date().toLocaleDateString() === dateKey;
+
+                                        const hasRecurring = (user.quests || []).some(q => q.isRecurring);
+                                        const singleQuests = (user.quests || []).filter(q => !q.isRecurring && q.targetDate === dateIso);
+
+                                        days.push(
+                                            <div key={d} className={`calendar-day-box ${isToday ? 'is-today' : ''}`}>
+                                                <div className={`calendar-day-number ${isToday ? 'text-orange font-bold' : 'text-dim'}`}>
+                                                    {d}
+                                                </div>
+
+                                                {hasRecurring && (
+                                                    <div className="recurrence-flag">
+                                                        <Flag size={12} fill="currentColor" />
+                                                    </div>
+                                                )}
+
+                                                <div className="flex flex-col gap-1 overflow-y-auto no-scrollbar flex-1">
+                                                    {singleQuests.map(q => {
+                                                        const isDone = (q.completedDates || []).includes(dateKey);
+                                                        const priorityClass = `calendar-priority-${(q.priority || 'NORMAL').toLowerCase()}`;
+
+                                                        return (
+                                                            <div
+                                                                key={q.id}
+                                                                onClick={() => handleCalendarQuestClick(q.id)}
+                                                                className={`calendar-quest-item ${priorityClass}`}
+                                                            >
+                                                                <div className={`w-1 h-1 rounded-full shrink-0 ${isDone ? 'bg-green-400' : 'bg-white/40'}`}></div>
+                                                                <span className={`calendar-quest-text ${isDone ? 'line-through opacity-50' : ''}`}>
+                                                                    {q.title}
+                                                                </span>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                                {isToday && <div className="absolute bottom-2 right-2 opacity-30"><Zap size={10} className="text-orange" /></div>}
+                                            </div>
+                                        );
+                                    }
+                                    return days;
+                                })()}
+                            </div>
+                        </div>
+                    </div>
                 )}
 
                 {activeTab === 'arena' && (
@@ -829,10 +1975,10 @@ export default function App() {
                                                         className="border-b border-border/20 hover:bg-violet/5 transition-colors cursor-pointer group"
                                                     >
                                                         <td className="py-5">
-                                                            <span className="text-xs font-bold text-bright tracking-wide block">{ex.name}</span>
+                                                            <span className="text-sm font-bold text-bright tracking-wide block">{ex.name}</span>
                                                         </td>
                                                         <td className="py-5 text-center">
-                                                            <span className="text-[7px] text-violet bg-violet/10 px-3 py-1.5 rounded-lg border border-violet/20">
+                                                            <span className="text-[10px] text-violet bg-violet/10 px-3 py-1.5 rounded-lg border border-violet/20">
                                                                 {ex.detail}
                                                             </span>
                                                         </td>
@@ -867,19 +2013,157 @@ export default function App() {
                     </div>
                 )}
 
+                {activeTab === 'dieta' && (
+                    <div className="animate-slide-up pb-24 max-w-5xl mx-auto space-y-8">
+                        {/* Header IA Reorganizado */}
+                        <div className="flex flex-col md:flex-row items-stretch gap-6 mb-10">
+                            <div className="flex-1 flex items-center gap-6">
+                                <div className="w-16 h-16 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.1)] shrink-0">
+                                    <Utensils size={28} className="text-green-400" />
+                                </div>
+                                <div>
+                                    <h2 className="font-pixel text-[12px] text-green-400 mb-1">ALQUIMIA NUTRICIONAL</h2>
+                                    <p className="font-pixel text-[6px] text-dim uppercase tracking-[2px]">Módulo de Forja Biológica IA</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-[#161b22] px-8 py-4 rounded-3xl border border-white/5 flex flex-col justify-center min-w-[220px]">
+                                <div className="flex justify-between items-center mb-1">
+                                    <span className="font-pixel text-[6px] text-dim uppercase">Cálculo de TDEE</span>
+                                    <Activity size={10} className="text-green-500 opacity-40" />
+                                </div>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="font-pixel text-[14px] text-bright">{(() => {
+                                        const weight = parseFloat(user.weight) || 70;
+                                        const height = parseFloat(user.height) || 170;
+                                        let base = weight * 22 * 1.35;
+                                        if (user.goals.includes('Emagrecer')) base -= 500;
+                                        if (user.goals.includes('Ganhar massa')) base += 500;
+                                        return Math.round(base);
+                                    })()}</span>
+                                    <span className="font-pixel text-[6px] text-dim">KCAL / DIA</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Status Grid Compacto */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="premium-card !bg-surface/20 !p-4 border-white/5">
+                                <div className="flex items-center gap-3">
+                                    <Flame size={14} className="text-orange" />
+                                    <div>
+                                        <span className="font-pixel text-[5px] text-dim uppercase block">Energia Alvo</span>
+                                        <p className="font-pixel text-[8px] text-bright">{user.maxEnergy || 2180} KCAL</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="premium-card !bg-surface/20 !p-4 border-white/5">
+                                <div className="flex items-center gap-3">
+                                    <Droplets size={14} className="text-blue" />
+                                    <div>
+                                        <span className="font-pixel text-[5px] text-dim uppercase block">Mana Líquida</span>
+                                        <p className="font-pixel text-[8px] text-bright">{user.maxWater || 2450} ML</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="premium-card !bg-surface/20 !p-4 border-white/5">
+                                <div className="flex items-center gap-3">
+                                    <Target size={14} className="text-hp-red" />
+                                    <div>
+                                        <span className="font-pixel text-[5px] text-dim uppercase block">Objetivo</span>
+                                        <p className="font-pixel text-[8px] text-bright uppercase">{
+                                            user.goals.includes('Emagrecer') ? 'Déficit' :
+                                                user.goals.includes('Ganhar massa') ? 'Massa' : 'Manter'
+                                        }</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={generateDailyPlan}
+                                className="premium-card !bg-green-500/10 hover:!bg-green-500/20 !p-4 border-green-500/20 text-center transition-all group active:scale-95"
+                            >
+                                <RotateCcw size={14} className="text-green-400 mx-auto mb-1 group-hover:rotate-180 transition-transform duration-500" />
+                                <span className="font-pixel text-[6px] text-green-400 uppercase font-bold">Gerar pela IA</span>
+                            </button>
+
+                            <button
+                                onClick={() => setShowNewMealModal(true)}
+                                className="premium-card !bg-blue-500/10 hover:!bg-blue-500/20 !p-4 border-blue-500/20 text-center transition-all group active:scale-95"
+                            >
+                                <Plus size={14} className="text-blue mx-auto mb-1" />
+                                <span className="font-pixel text-[6px] text-blue uppercase font-bold">Add Manual</span>
+                            </button>
+                        </div>
+
+                        {/* Plano de Refeições IA */}
+                        <div>
+                            <h3 className="font-pixel text-[8px] text-bright tracking-widest mb-6 flex items-center gap-2">
+                                <ClipboardList size={14} className="text-green-400" /> PLANO DE REFEIÇÕES DIÁRIO
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {(user.dailyMealPlan || []).map((meal, idx) => {
+                                    const isDone = (user.mealDone || []).includes(idx);
+                                    return (
+                                        <div
+                                            key={idx}
+                                            onClick={() => toggleMeal(idx)}
+                                            className={`premium-card !bg-[#0d1117] border-white/5 !p-6 flex flex-col gap-4 relative group hover:border-green-500/30 transition-all overflow-hidden cursor-pointer ${isDone ? 'opacity-30 grayscale-[0.8]' : ''}`}
+                                        >
+                                            <div className="flex items-center justify-between z-10">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`font-pixel text-[8px] px-3 py-1.5 rounded-lg border transition-colors ${isDone ? 'bg-green-500/5 text-green-500/40 border-green-500/10' : 'bg-green-500/10 text-green-400 border-green-500/10'}`}>
+                                                        {meal.time}
+                                                    </div>
+                                                    <h4 className={`font-pixel text-[9px] uppercase tracking-tighter transition-colors ${isDone ? 'text-dim line-through opacity-70' : 'text-bright group-hover:text-green-400'}`}>{meal.name}</h4>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <span className={`font-pixel text-[7px] transition-colors ${isDone ? 'text-dim/40 line-through' : 'text-dim'}`}>{meal.cals} KCAL</span>
+                                                    {isDone && <Check size={12} className="text-green-500" />}
+                                                </div>
+                                            </div>
+                                            <p className={`text-[12px] leading-relaxed font-sans z-10 min-h-[40px] transition-colors ${isDone ? 'text-dim/40 italic line-through' : 'text-dim/80'}`}>
+                                                {meal.selectedItem}
+                                            </p>
+                                            <div className={`absolute top-0 right-0 w-24 h-24 blur-[40px] rounded-full pointer-events-none transition-colors ${isDone ? 'bg-green-500/2' : 'bg-green-500/5 group-hover:bg-green-500/10'}`}></div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Dica IA */}
+                        <div className="premium-card !bg-[#161b22] border-green-500/10 p-6 flex items-center gap-6">
+                            <div className="w-12 h-12 rounded-xl bg-green-500/5 flex items-center justify-center border border-green-500/10 shrink-0">
+                                <Star size={20} className="text-green-400 animate-pulse" />
+                            </div>
+                            <p className="text-[11px] text-dim italic leading-relaxed">
+                                "Lembre-se: O gerador de dietas alterna itens para garantir que seu metabolismo não estagne. Refeições variadas evitam a fadiga mental do sistema."
+                            </p>
+                        </div>
+                    </div>
+                )}
+
                 {/* Bottom Navigation (Fixed at bottom) */}
                 <nav className="bottom-nav">
                     <div onClick={() => setActiveTab('inicio')} className={`nav-item ${activeTab === 'inicio' ? 'active' : ''}`}>
                         <Home size={20} /><span>INÍCIO</span>
                     </div>
-                    <div onClick={() => setActiveTab('inicio')} className="nav-item">
-                        <ClipboardList size={20} /><span>QUESTS</span>
+                    <div onClick={() => setActiveTab('dash')} className={`nav-item ${activeTab === 'dash' ? 'active' : ''}`}>
+                        <BarChart3 size={20} /><span>DASH</span>
+                    </div>
+                    <div onClick={() => setActiveTab('calendario')} className={`nav-item ${activeTab === 'calendario' ? 'active' : ''}`}>
+                        <Calendar size={20} /><span>CALENDÁRIO</span>
                     </div>
                     <div onClick={() => setActiveTab('arena')} className={`nav-item ${activeTab === 'arena' ? 'active' : ''}`}>
                         <TrendingUp size={20} /><span>ARENA</span>
                     </div>
-                    <div className="nav-item"><Utensils size={20} /><span>DIETA</span></div>
-                    <div className="nav-item"><Users size={20} /><span>PERFIS</span></div>
+                    <div onClick={() => setActiveTab('dieta')} className={`nav-item ${activeTab === 'dieta' ? 'active' : ''}`}>
+                        <Utensils size={20} /><span>DIETA</span>
+                    </div>
+                    <div onClick={() => setActiveTab('perfis')} className={`nav-item ${activeTab === 'perfis' ? 'active' : ''}`}>
+                        <Users size={20} /><span>PERFIS</span>
+                    </div>
                 </nav>
 
                 {/* Fail Modal */}
@@ -915,60 +2199,249 @@ export default function App() {
                 {/* New Quest Modal */}
                 {showNewQuestModal && (
                     <div className="modal-overlay">
-                        <div className="premium-card max-w-xl animate-slide-up !bg-[#0d1117] !border-blue/30 shadow-[0_0_50px_rgba(0,145,255,0.15)] text-center">
-                            <h2 className="font-pixel text-[10px] mb-10 flex items-center justify-center gap-3 text-blue">
-                                <Plus size={20} /> FORJAR NOVA QUEST
-                            </h2>
-                            <form onSubmit={addNewQuest} className="space-y-8">
-                                <div className="space-y-6">
-                                    <div className="space-y-3">
-                                        <label className="font-pixel text-[7px] text-dim block uppercase tracking-widest">Nome da Tarefa</label>
-                                        <input
-                                            type="text"
-                                            placeholder="Ex: Dominar Alquimia Digital"
-                                            className="w-full text-center py-4 uppercase border-border/40 focus:border-blue/60"
-                                            value={newQuestData.title}
-                                            onChange={e => setNewQuestData(prev => ({ ...prev, title: e.target.value }))}
-                                            required
-                                        />
+                        <div className="premium-card modal-card max-w-lg animate-slide-up !bg-[#0d1117] !p-8 !border-blue/30 shadow-[0_0_50px_rgba(0,145,255,0.15)]">
+                            <div className="flex items-center justify-between mb-8">
+                                <h2 className="font-pixel text-[10px] flex items-center gap-3 text-blue">
+                                    <Plus size={20} /> FORJAR NOVA QUEST
+                                </h2>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowNewQuestModal(false)}
+                                    className="text-dim hover:text-white transition-colors p-2"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <form onSubmit={addNewQuest} className="space-y-6">
+                                <div className="space-y-4">
+                                    <input
+                                        type="text"
+                                        placeholder="Título da tarefa..."
+                                        className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-blue/50 outline-none transition-all font-sans"
+                                        value={newQuestData.title}
+                                        onChange={e => setNewQuestData(prev => ({ ...prev, title: e.target.value }))}
+                                        required
+                                    />
+
+                                    <textarea
+                                        placeholder="Descrição (opcional)"
+                                        className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-blue/50 outline-none transition-all font-sans min-h-[80px] resize-none"
+                                        value={newQuestData.desc}
+                                        onChange={e => setNewQuestData(prev => ({ ...prev, desc: e.target.value }))}
+                                    />
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="font-pixel text-[6px] text-dim uppercase">Data Limite de Entrega</label>
+                                            <input
+                                                type="date"
+                                                className="w-full bg-[#161b22] border-transparent p-3 rounded-xl text-[10px] outline-none font-sans"
+                                                value={newQuestData.targetDate}
+                                                onChange={e => setNewQuestData(prev => ({ ...prev, targetDate: e.target.value }))}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="font-pixel text-[6px] text-dim uppercase">Duração (Min)</label>
+                                            <input
+                                                type="number"
+                                                placeholder="30"
+                                                className="w-full bg-[#161b22] border-transparent p-3 rounded-xl text-sm outline-none font-sans"
+                                                value={newQuestData.time}
+                                                onChange={e => setNewQuestData(prev => ({ ...prev, time: e.target.value }))}
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="space-y-3">
-                                        <label className="font-pixel text-[7px] text-dim block uppercase tracking-widest">Tempo Estimado (Minutos)</label>
+
+                                    <div className="flex items-center justify-between bg-[#161b22] p-4 rounded-xl">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-sans font-medium">RECORRENTE</span>
+                                            <span className="text-[8px] font-pixel text-dim">HABITO DIÁRIO</span>
+                                        </div>
+                                        <label className="switch relative inline-block w-10 h-6">
+                                            <input
+                                                type="checkbox"
+                                                checked={newQuestData.isRecurring}
+                                                onChange={e => setNewQuestData(prev => ({ ...prev, isRecurring: e.target.checked }))}
+                                                className="opacity-0 w-0 h-0"
+                                            />
+                                            <span className={`slider round absolute cursor-pointer inset-0 bg-[#0d1117] border border-white/10 transition-all rounded-full before:absolute before:content-[''] before:h-4 before:w-4 before:left-1 before:bottom-0.8 before:bg-blue before:transition-all before:rounded-full ${newQuestData.isRecurring ? 'before:translate-x-4 before:!bg-orange !border-orange/30' : ''}`}></span>
+                                        </label>
+                                    </div>
+
+                                    <div className="space-y-4 pt-2">
+                                        <label className="font-pixel text-[6px] text-dim uppercase">Prioridade da Quest</label>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {[
+                                                { id: 'Alta', label: 'ALTA', color: 'text-hp-red', border: 'border-hp-red/50' },
+                                                { id: 'Média', label: 'MÉDIA', color: 'text-orange', border: 'border-orange/50' },
+                                                { id: 'Normal', label: 'NORMAL', color: 'text-blue', border: 'border-blue/50' },
+                                                { id: 'Sem prioridade', label: 'SEM PRIORIDADE', color: 'text-dim', border: 'border-white/10' }
+                                            ].map(p => (
+                                                <button
+                                                    key={p.id}
+                                                    type="button"
+                                                    onClick={() => setNewQuestData(prev => ({ ...prev, priority: p.id }))}
+                                                    className={`px-4 py-3 rounded-xl font-pixel text-[7px] border flex items-center justify-center gap-2 transition-all ${newQuestData.priority === p.id ? `bg-surface ${p.border} ${p.color} shadow-[0_0_15px_rgba(255,255,255,0.05)]` : 'bg-[#161b22] border-transparent text-dim hover:border-white/10'}`}
+                                                >
+                                                    <Flag size={10} fill={newQuestData.priority === p.id ? 'currentColor' : 'none'} />
+                                                    {p.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <label className="font-pixel text-[7px] text-dim uppercase">Peso / Esforço</label>
+                                            <span className="font-pixel text-orange text-sm">{newQuestData.difficulty}</span>
+                                        </div>
                                         <input
-                                            type="number"
-                                            placeholder="60"
-                                            className="w-full text-center py-4 border-border/40 focus:border-blue/60"
-                                            value={newQuestData.time}
-                                            onChange={e => setNewQuestData(prev => ({ ...prev, time: e.target.value }))}
-                                            required
+                                            type="range"
+                                            min="1"
+                                            max="10"
+                                            className="w-full accent-orange"
+                                            value={newQuestData.difficulty}
+                                            onChange={e => setNewQuestData(prev => ({ ...prev, difficulty: e.target.value }))}
                                         />
+                                        <div className="flex justify-between font-pixel text-[5px] text-dim">
+                                            <span>FÁCIL</span>
+                                            <span>DIFÍCIL</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <label className="font-pixel text-[10px] text-dim block uppercase">Categoria do Dashboard</label>
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {['HÁBITOS', 'TAREFAS', 'HIGIENE', 'DIETA'].map(cat => (
+                                                <button
+                                                    key={cat}
+                                                    type="button"
+                                                    onClick={() => setNewQuestData(prev => ({
+                                                        ...prev,
+                                                        category: cat,
+                                                        isRecurring: cat !== 'TAREFAS' // Suggest recurring for non-tasks
+                                                    }))}
+                                                    className={`py-3 font-pixel text-[5px] rounded-xl border transition-all ${newQuestData.category === cat ? 'bg-blue border-blue text-white' : 'bg-surface/50 border-white/10 text-dim'}`}
+                                                >
+                                                    {cat}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="p-5 bg-deep/50 rounded-2xl border border-blue/20">
-                                    <p className="font-pixel text-[6px] text-blue/80 leading-relaxed uppercase">
-                                        "O Oráculo analisará sua tarefa para definir a recompensa em XP e sua raridade."
-                                    </p>
-                                </div>
-                                <div className="space-y-3 pt-4">
+
+                                <div className="flex gap-3 pt-4">
                                     <button
                                         type="submit"
-                                        className="btn-premium !bg-blue shadow-[0_4px_20px_rgba(0,145,255,0.3)] hover:scale-105 active:scale-95 transition-all"
+                                        className="btn-primary flex-[2]"
                                     >
-                                        FORJAR QUEST
+                                        ADICIONAR MISSAO
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setShowNewQuestModal(false)}
-                                        className="w-full py-4 font-pixel text-[7px] text-dim hover:text-white transition-colors uppercase tracking-widest"
+                                        className="btn-action flex-1"
                                     >
-                                        Abortar Missão
+                                        CANCELAR
                                     </button>
                                 </div>
                             </form>
                         </div>
                     </div>
                 )}
+
+                {/* Modal de Nova Refeição */}
+                {showNewMealModal && (
+                    <div className="modal-overlay">
+                        <div className="premium-card modal-card max-w-lg animate-slide-up">
+                            <div className="flex items-center justify-between mb-8">
+                                <h2 className="font-pixel text-[10px] flex items-center gap-3 text-green-400">
+                                    <Utensils size={20} /> FORJAR ALIMENTO
+                                </h2>
+                                <button onClick={() => setShowNewMealModal(false)} className="text-dim hover:text-white transition-colors p-2">
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <form onSubmit={addManualMeal} className="space-y-6">
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="font-pixel text-[6px] text-dim uppercase mb-2 block">Título do Alimento</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Ex: Almoço de Guerreiro"
+                                            className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-green-500/50 outline-none transition-all font-sans"
+                                            value={newMealData.title}
+                                            onChange={e => setNewMealData(prev => ({ ...prev, title: e.target.value }))}
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="font-pixel text-[6px] text-dim uppercase mb-2 block">Descritivo (Ingredientes)</label>
+                                        <textarea
+                                            placeholder="Ex: 200g de frango + 100g de arroz integral"
+                                            className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-green-500/50 outline-none transition-all font-sans min-h-[100px] resize-none"
+                                            value={newMealData.desc}
+                                            onChange={e => setNewMealData(prev => ({ ...prev, desc: e.target.value }))}
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="font-pixel text-[6px] text-dim uppercase mb-2 block">Horário</label>
+                                        <input
+                                            type="time"
+                                            className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-green-500/50 outline-none transition-all font-sans"
+                                            value={newMealData.time}
+                                            onChange={e => setNewMealData(prev => ({ ...prev, time: e.target.value }))}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <div className="bg-green-500/5 p-4 rounded-xl border border-green-500/20 flex gap-4 items-center">
+                                    <span className="text-xl">🤖</span>
+                                    <p className="text-[9px] text-dim italic">A IA calculará automaticamente as calorias baseando-se nos seus ingredientes após salvar.</p>
+                                </div>
+                                <button type="submit" className="btn-primary w-full py-4">
+                                    FORJAR ALIMENTO
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </div>
+            {/* Modal de Confirmação de Exclusão */}
+            {profileToDelete && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+                    <div className="w-full max-w-sm animate-scale-up">
+                        <div className="premium-card glass border-hp-red/50 text-center p-8">
+                            <div className="flex justify-center mb-6">
+                                <div className="w-16 h-16 rounded-full bg-hp-red/10 border border-hp-red/30 flex items-center justify-center text-hp-red animate-pulse">
+                                    <Skull size={32} />
+                                </div>
+                            </div>
+                            <h3 className="font-pixel text-[10px] text-white mb-4 uppercase tracking-widest leading-relaxed">
+                                Banir Herói da Guilda?
+                            </h3>
+                            <p className="text-[8px] font-pixel text-dim mb-8 leading-relaxed uppercase">
+                                Esta ação é irreversível. O herói e todo o seu progresso serão perdidos no abismo.
+                            </p>
+                            <div className="flex flex-col gap-3">
+                                <button
+                                    onClick={confirmDeleteProfile}
+                                    className="btn-primary !bg-hp-red !border-hp-red !text-white w-full py-4"
+                                >
+                                    Confirmar Banimento
+                                </button>
+                                <button
+                                    onClick={() => setProfileToDelete(null)}
+                                    className="btn-action w-full py-4"
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
-    )
+    );
 }
