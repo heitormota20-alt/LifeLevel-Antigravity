@@ -2002,42 +2002,42 @@ export default function App() {
                                     </div>
                                 )
                             }
-                        </div>
-                {/* Modal de Confirmação de Exclusão */}
-                    {profileToDelete && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-                            <div className="w-full max-w-sm animate-scale-up">
-                                <div className="premium-card glass border-hp-red/50 text-center p-8">
-                                    <div className="flex justify-center mb-6">
-                                        <div className="w-16 h-16 rounded-full bg-hp-red/10 border border-hp-red/30 flex items-center justify-center text-hp-red animate-pulse">
-                                            <Skull size={32} />
+                            {/* Modal de Confirmação de Exclusão */}
+                            {profileToDelete && (
+                                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+                                    <div className="w-full max-w-sm animate-scale-up">
+                                        <div className="premium-card glass border-hp-red/50 text-center p-8">
+                                            <div className="flex justify-center mb-6">
+                                                <div className="w-16 h-16 rounded-full bg-hp-red/10 border border-hp-red/30 flex items-center justify-center text-hp-red animate-pulse">
+                                                    <Skull size={32} />
+                                                </div>
+                                            </div>
+                                            <h3 className="font-pixel text-[10px] text-white mb-4 uppercase tracking-widest leading-relaxed">
+                                                Banir Herói da Guilda?
+                                            </h3>
+                                            <p className="text-[8px] font-pixel text-dim mb-8 leading-relaxed uppercase">
+                                                Esta ação é irreversível. O herói e todo o seu progresso serão perdidos no abismo.
+                                            </p>
+                                            <div className="flex flex-col gap-3">
+                                                <button
+                                                    onClick={confirmDeleteProfile}
+                                                    className="btn-primary !bg-hp-red !border-hp-red !text-white w-full py-4"
+                                                >
+                                                    Confirmar Banimento
+                                                </button>
+                                                <button
+                                                    onClick={() => setProfileToDelete(null)}
+                                                    className="btn-action w-full py-4"
+                                                >
+                                                    Cancelar
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                    <h3 className="font-pixel text-[10px] text-white mb-4 uppercase tracking-widest leading-relaxed">
-                                        Banir Herói da Guilda?
-                                    </h3>
-                                    <p className="text-[8px] font-pixel text-dim mb-8 leading-relaxed uppercase">
-                                        Esta ação é irreversível. O herói e todo o seu progresso serão perdidos no abismo.
-                                    </p>
-                                    <div className="flex flex-col gap-3">
-                                        <button
-                                            onClick={confirmDeleteProfile}
-                                            className="btn-primary !bg-hp-red !border-hp-red !text-white w-full py-4"
-                                        >
-                                            Confirmar Banimento
-                                        </button>
-                                        <button
-                                            onClick={() => setProfileToDelete(null)}
-                                            className="btn-action w-full py-4"
-                                        >
-                                            Cancelar
-                                        </button>
-                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
-                    )}
-                </div>
+            </div>
             </div>
             );
 }
