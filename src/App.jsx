@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from './supabaseClient'
 import AuthModal from './AuthModal'
 import {
@@ -414,10 +415,20 @@ function Onboarding({ onComplete, onCancel }) {
     )
 }
 
-// --- MAIN APP ---
+// --- MAIN APP WRAPPER ---
 export default function App() {
+    return (
+        <BrowserRouter>
+            <AppContent />
+        </BrowserRouter>
+    );
+}
+
+function AppContent() {
+    const navigate = useNavigate();
+    const location = useLocation();
     const [session, setSession] = useState(null)
-    const [activeTab, setActiveTab] = useState('hoje');
+    // activeTab state removed in favor of URL-based routing
     const [workoutType, setWorkoutType] = useState('superiores');
     const [workoutDone, setWorkoutDone] = useState([]);
     const [completingQuestId, setCompletingQuestId] = useState(null);
@@ -487,7 +498,7 @@ export default function App() {
 
     const handleCalendarQuestClick = (questId) => {
         setHighlightedQuestId(questId);
-        setActiveTab('inicio');
+        navigate('/Inicio');
         setSearchQuery('');
         setFilterPriority('Todas');
         setFilterDate('');
@@ -1158,7 +1169,7 @@ export default function App() {
             setWorkoutDone([]);
             alert('Treino concluído com sucesso! Recompensas recebidas.');
             // Voltar para o início após concluir
-            setTimeout(() => setActiveTab('inicio'), 600);
+            setTimeout(() => navigate('/Inicio'), 600);
         } else {
             alert('Você já concluiu este treino hoje!');
         }
@@ -1209,1157 +1220,1240 @@ export default function App() {
         });
     }
 
+
+
+
     return (
         <div className="flex flex-col min-h-screen bg-deep overflow-x-hidden">
-            {!session && <AuthModal />}
-            <nav className="top-nav">
-                <div className="flex flex-col gap-6 w-full max-w-[1200px] px-8">
-                    {/* Branding Area */}
-                    <div className="flex items-center gap-3 py-2">
-                        <div className="w-10 h-10 rounded-xl bg-orange flex items-center justify-center shadow-[0_0_20px_rgba(255,107,0,0.3)]">
-                            <Flame size={24} className="text-deep fill-deep" />
-                        </div>
-                        <div className="flex flex-col">
-                            <h1 className="font-pixel text-xl text-bright tracking-[2px] mb-0.5">TaskLine</h1>
-                            <p className="font-pixel text-[8px] text-dim uppercase tracking-[3px]">Meça seu esforço diário</p>
-                        </div>
-                    </div>
-
-                    {/* Navigation Tabs */}
-                    <div className="flex gap-8 overflow-x-auto no-scrollbar pb-2">
-                        {[
-                            { id: 'hoje', label: 'Hoje', icon: Home },
-                            { id: 'tarefas', label: 'Tarefas', icon: ClipboardList },
-                            { id: 'habitos', label: 'Hábitos', icon: RotateCcw },
-                            { id: 'arena', label: 'Conquistas', icon: Trophy },
-                            { id: 'dash', label: 'Dashboard', icon: BarChart2 },
-                            { id: 'calendar', label: 'Calendário', icon: Calendar },
-                            { id: 'dieta', label: 'Categorias', icon: Bookmark },
-                            { id: 'perfil', label: 'Configurações', icon: Settings }
-                        ].map(tab => (
-                            <div
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`nav-item !flex-row !gap-3 !p-0 !min-w-0 transition-opacity whitespace-nowrap ${activeTab === tab.id ? 'active' : 'opacity-40 hover:opacity-100'}`}
-                            >
-                                <span className={`font-pixel text-[10px] uppercase tracking-[1px] ${activeTab === tab.id ? 'text-orange' : 'text-bright'}`}>{tab.label}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </nav>
-
-            <div className="flex-1 p-4 md:p-8 pt-44 pb-40">
-                <div className="container mx-auto">
-                    {activeTab === 'hoje' && (
-                        <div className="animate-slide-up">
-                            <div className="hoje-grid">
-                                <div className="space-y-16">
-                                    <div className="text-center mb-12">
-                                        <h1 className="font-pixel text-3xl text-bright mb-2">Hoje</h1>
-                                        <p className="font-pixel text-dim text-[10px] uppercase tracking-[2px]">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+            <Routes>
+                <Route path="/Cadastro" element={session ? <Navigate to="/Inicio" /> : <AuthModal />} />
+                <Route path="*" element={
+                    !session ? <Navigate to="/Cadastro" /> : (
+                        <>
+                            <nav className="top-nav">
+                                <div className="flex flex-col gap-6 w-full max-w-[1200px] px-8">
+                                    {/* Branding Area */}
+                                    <div className="flex items-center gap-3 py-2">
+                                        <div className="w-10 h-10 rounded-xl bg-orange flex items-center justify-center shadow-[0_0_20px_rgba(255,107,0,0.3)]">
+                                            <Flame size={24} className="text-deep fill-deep" />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <h1 className="font-pixel text-xl text-bright tracking-[2px] mb-0.5">TaskLine</h1>
+                                            <p className="font-pixel text-[8px] text-dim uppercase tracking-[3px]">Meça seu esforço diário</p>
+                                        </div>
                                     </div>
 
-                                    <section>
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <FileText size={18} className="text-dim" />
-                                            <h2 className="font-pixel text-[10px] text-bright tracking-[2px] uppercase">Tarefas</h2>
-                                        </div>
-                                        <button
-                                            onClick={() => {
-                                                setNewQuestData(prev => ({ ...prev, category: 'TAREFAS', isRecurring: false }));
-                                                setShowNewQuestModal(true);
-                                            }}
-                                            className="w-full bg-[#ff6b00] hover:bg-[#ff8533] text-deep font-bold py-5 rounded-2xl flex items-center justify-center gap-3 transition-all mb-12 shadow-lg shadow-orange/20"
-                                        >
-                                            <Plus size={20} className="stroke-[3px]" />
-                                            <span className="font-pixel text-[10px] tracking-[2px]">NOVA TAREFA</span>
-                                        </button>
-
-                                        <div className="space-y-4">
-                                            {user.quests.filter(q => q.category === 'TAREFAS').length === 0 ? (
-                                                <div className="py-24 text-center opacity-40">
-                                                    <div className="flex justify-center mb-6">
-                                                        <div className="relative">
-                                                            <ClipboardList size={48} className="text-dim/20" />
-                                                            <Check size={24} className="text-dim/40 absolute -bottom-2 -right-2" />
-                                                        </div>
-                                                    </div>
-                                                    <p className="font-pixel text-[11px] text-bright uppercase tracking-widest mb-2">Nenhuma tarefa encontrada</p>
-                                                    <p className="font-pixel text-[8px] text-dim uppercase tracking-wider">Ajuste os filtros ou adicione uma tarefa</p>
-                                                </div>
-                                            ) : (
-                                                user.quests.filter(q => q.category === 'TAREFAS').map(q => {
-                                                    const currentDayKey = new Date().toLocaleDateString();
-                                                    const isDone = (q.completedDates || []).includes(currentDayKey);
-                                                    return (
-                                                        <div
-                                                            key={q.id}
-                                                            onClick={() => handleComplete(q.id)}
-                                                            className={`hoje-task-item ${isDone ? 'opacity-40 grayscale' : ''}`}
-                                                        >
-                                                            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${isDone ? 'bg-orange border-orange shadow-[0_0_15px_rgba(255,107,0,0.4)]' : 'border-white/10 group-hover:border-orange/50'}`}>
-                                                                {isDone && <Check size={16} className="text-deep stroke-[3px]" />}
-                                                            </div>
-                                                            <div className="flex-1">
-                                                                <p className={`font-pixel text-xs text-bright mb-1 ${isDone ? 'line-through' : ''}`}>{q.title}</p>
-                                                                <span className="font-pixel text-[8px] text-dim uppercase tracking-wider">{q.priority} • {q.time}</span>
-                                                            </div>
-                                                            <div className="px-3 h-8 rounded-lg bg-surface flex items-center justify-center border border-white/5">
-                                                                <span className="font-pixel text-[8px] text-orange">{q.difficulty || 5}</span>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })
-                                            )}
-                                        </div>
-                                    </section>
-
-                                    <section>
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <Layout size={18} className="text-blue" />
-                                            <h2 className="font-pixel text-[10px] text-bright tracking-[2px] uppercase">Hábitos de Hoje</h2>
-                                        </div>
-                                        <div className="space-y-4">
-                                            {user.quests.filter(q => q.category === 'HÁBITOS' || q.isRecurring).length === 0 ? (
-                                                <div className="py-12 text-center opacity-20 border border-dashed border-white/5 rounded-2xl">
-                                                    <p className="font-pixel text-[8px] uppercase tracking-widest">Ritual diário não definido</p>
-                                                </div>
-                                            ) : (
-                                                user.quests.filter(q => q.category === 'HÁBITOS' || q.isRecurring).map(q => {
-                                                    const currentDayKey = new Date().toLocaleDateString();
-                                                    const isDone = (q.completedDates || []).includes(currentDayKey);
-                                                    return (
-                                                        <div
-                                                            key={q.id}
-                                                            onClick={() => handleComplete(q.id)}
-                                                            className={`hoje-task-item !bg-[#0d1117] border-white/5 hover:border-blue/30 ${isDone ? 'opacity-40' : ''}`}
-                                                        >
-                                                            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${isDone ? 'bg-blue border-blue shadow-[0_0_15px_rgba(0,145,255,0.4)]' : 'border-white/10'}`}>
-                                                                {isDone && <Check size={16} className="text-deep stroke-[3px]" />}
-                                                            </div>
-                                                            <div className="flex-1">
-                                                                <p className={`font-pixel text-[11px] text-bright mb-1 ${isDone ? 'line-through' : ''}`}>{q.title}</p>
-                                                            </div>
-                                                            <div className="px-3 h-8 rounded-lg bg-surface flex items-center justify-center border border-white/5">
-                                                                <span className="font-pixel text-[8px] text-blue">{(q.completedDates || []).length}</span>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })
-                                            )}
-                                        </div>
-                                    </section>
-                                </div>
-
-                                <aside className="summary-sidebar">
-                                    <h3 className="font-pixel text-[12px] text-bright tracking-[2px] mb-6 uppercase">Resumo</h3>
-                                    <div className="summary-grid">
-                                        {(() => {
-                                            const todayKeyStr = new Date().toLocaleDateString();
-                                            const tsks = user.quests.filter(q => q.category === 'TAREFAS');
-                                            const hbts = user.quests.filter(q => q.category === 'HÁBITOS' || q.isRecurring);
-                                            const dTsks = tsks.filter(q => (q.completedDates || []).includes(todayKeyStr)).length;
-                                            const dHbts = hbts.filter(q => (q.completedDates || []).includes(todayKeyStr)).length;
-                                            const tDiff = tsks.reduce((acc, q) => acc + (q.difficulty || 5), 0);
-                                            const dDiff = tsks.filter(q => (q.completedDates || []).includes(todayKeyStr)).reduce((acc, q) => acc + (q.difficulty || 5), 0);
-                                            const totalCount = tsks.length + hbts.length;
-
-                                            return [
-                                                { label: 'Score Total', value: totalCount > 0 ? Math.round(((dTsks + dHbts) / totalCount) * 100) : 0, sub: `Tarefas: ${dTsks} | Hábitos: ${dHbts}`, icon: Flame, color: 'text-orange', bg: 'bg-orange/10' },
-                                                { label: 'Tarefas', value: `${dTsks}/${tsks.length}`, sub: 'Tarefas Diárias', icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-500/10' },
-                                                { label: 'Hábitos', value: `${dHbts}/${hbts.length}`, sub: 'Consistência', icon: RotateCcw, color: 'text-orange', bg: 'bg-orange/10' },
-                                                { label: 'Peso Tarefas', value: `${dDiff}/${tDiff}`, sub: 'Valor Heroico', icon: Target, color: 'text-hp-red', bg: 'bg-hp-red/10' },
-                                            ].map(item => (
-                                                <div key={item.label} className="summary-card !bg-[#11141d] border-white/5 p-6 rounded-[24px]">
-                                                    <div className={`w-8 h-8 rounded-lg ${item.bg} flex items-center justify-center mb-4`}>
-                                                        <item.icon size={16} className={item.color} />
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-pixel text-xl text-bright mb-1">{item.value}</p>
-                                                        <p className="font-pixel text-[8px] text-bright/80 uppercase tracking-widest">{item.label}</p>
-                                                        {item.sub && <p className="font-pixel text-[6px] text-dim mt-2 uppercase tracking-tighter">{item.sub}</p>}
-                                                    </div>
-                                                </div>
-                                            ))
-                                        })()}
-                                    </div>
-                                </aside>
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'tarefas' && (
-                        <div className="animate-slide-up pb-24 max-w-4xl mx-auto">
-                            <header className="mb-12">
-                                <div className="flex items-center gap-4 mb-2">
-                                    <ClipboardList size={32} className="text-blue" />
-                                    <h2 className="font-pixel text-2xl text-bright">Missões Ativas</h2>
-                                </div>
-                                <p className="font-pixel text-dim text-[8px] uppercase tracking-[4px]">Gerenciamento de Tarefas e Objetivos Únicos</p>
-                            </header>
-
-                            <button
-                                onClick={() => {
-                                    setNewQuestData(prev => ({ ...prev, category: 'TAREFAS', isRecurring: false }));
-                                    setShowNewQuestModal(true);
-                                }}
-                                className="w-full bg-blue/10 hover:bg-blue/20 border border-blue/20 text-blue font-pixel py-6 rounded-2xl flex items-center justify-center gap-3 transition-all mb-12 group"
-                            >
-                                <Plus size={24} className="group-hover:rotate-90 transition-transform" />
-                                <span className="text-[10px] font-bold tracking-[2px]">FORJAR NOVA TAREFA</span>
-                            </button>
-
-                            <div className="space-y-4">
-                                {user.quests.filter(q => q.category === 'TAREFAS').length === 0 ? (
-                                    <div className="py-32 text-center opacity-20 border-2 border-dashed border-white/5 rounded-3xl">
-                                        <Ghost size={64} className="mx-auto mb-6" />
-                                        <p className="font-pixel text-[10px] uppercase tracking-widest">O mural de missões está vazio</p>
-                                    </div>
-                                ) : (
-                                    user.quests.filter(q => q.category === 'TAREFAS').map(q => {
-                                        const currentDayKey = new Date().toLocaleDateString();
-                                        const isDone = (q.completedDates || []).includes(currentDayKey);
-                                        return (
+                                    {/* Navigation Tabs */}
+                                    <div className="flex gap-8 overflow-x-auto no-scrollbar pb-2">
+                                        {[
+                                            { id: 'hoje', label: 'Hoje', icon: Home, path: '/Inicio' },
+                                            { id: 'tarefas', label: 'Tarefas', icon: ClipboardList, path: '/Tarefas' },
+                                            { id: 'habitos', label: 'Hábitos', icon: RotateCcw, path: '/Habitos' },
+                                            { id: 'arena', label: 'Conquistas', icon: Trophy, path: '/Conquistas' },
+                                            { id: 'dash', label: 'Dashboard', icon: BarChart2, path: '/Dashboard' },
+                                            { id: 'calendar', label: 'Calendário', icon: Calendar, path: '/Calendario' },
+                                            { id: 'dieta', label: 'Categorias', icon: Bookmark, path: '/Categorias' },
+                                            { id: 'perfil', label: 'Configurações', icon: Settings, path: '/Configuracoes' }
+                                        ].map(tab => (
                                             <div
-                                                key={q.id}
-                                                onClick={() => handleComplete(q.id)}
-                                                className={`premium-card !p-6 flex items-center gap-6 border-white/5 hover:border-blue/30 transition-all cursor-pointer group ${isDone ? 'opacity-40 grayscale' : ''}`}
+                                                key={tab.id}
+                                                onClick={() => navigate(tab.path)}
+                                                className={`nav-item !flex-row !gap-3 !p-0 !min-w-0 transition-opacity whitespace-nowrap ${location.pathname === tab.path ? 'active' : 'opacity-40 hover:opacity-100'}`}
                                             >
-                                                <div className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all ${isDone ? 'bg-blue border-blue shadow-[0_0_20px_rgba(0,145,255,0.4)]' : 'border-white/10 group-hover:border-blue/50'}`}>
-                                                    {isDone ? <Check size={24} className="text-white" /> : <div className="w-2 h-2 rounded-full bg-blue opacity-50"></div>}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-3 mb-1">
-                                                        <p className={`font-pixel text-sm text-bright ${isDone ? 'line-through' : ''}`}>{q.title}</p>
-                                                        <span className={`px-2 py-0.5 rounded text-[8px] font-pixel ${q.priority === 'Alta' ? 'bg-hp-red/10 text-hp-red' : 'bg-blue/10 text-blue'}`}>{q.priority}</span>
-                                                    </div>
-                                                    <p className="text-[10px] text-dim font-sans">{q.desc}</p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <div className="font-pixel text-[12px] text-orange mb-1">+{q.xpReward} XP</div>
-                                                    <div className="font-pixel text-[8px] text-dim">{q.time}</div>
-                                                </div>
+                                                <span className={`font-pixel text-[10px] uppercase tracking-[1px] ${location.pathname === tab.path ? 'text-orange' : 'text-bright'}`}>{tab.label}</span>
                                             </div>
-                                        );
-                                    })
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'habitos' && (
-                        <div className="animate-slide-up pb-24 max-w-4xl mx-auto">
-                            <header className="mb-12">
-                                <div className="flex items-center gap-4 mb-2">
-                                    <RotateCcw size={32} className="text-violet" />
-                                    <h2 className="font-pixel text-2xl text-bright">Ritual Diário</h2>
+                                        ))}
+                                    </div>
                                 </div>
-                                <p className="font-pixel text-dim text-[8px] uppercase tracking-[4px]">Consistência é a Verdadeira Magia</p>
-                            </header>
+                            </nav>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {user.quests.filter(q => q.category === 'HÁBITOS' || q.isRecurring).map(q => {
-                                    const currentDayKey = new Date().toLocaleDateString();
-                                    const isDone = (q.completedDates || []).includes(currentDayKey);
-                                    const streak = (q.completedDates || []).length;
-
-                                    return (
-                                        <div
-                                            key={q.id}
-                                            onClick={() => handleComplete(q.id)}
-                                            className={`premium-card !p-8 bg-surface/20 border-white/5 hover:border-violet/30 transition-all cursor-pointer relative overflow-hidden group ${isDone ? 'opacity-50' : ''}`}
-                                        >
-                                            <div className="flex justify-between items-start mb-6 relative z-10">
-                                                <div className={`w-10 h-10 rounded-xl border-2 flex items-center justify-center transition-all ${isDone ? 'bg-violet border-violet shadow-[0_0_15px_rgba(110,86,207,0.4)]' : 'border-white/10 group-hover:border-violet/50'}`}>
-                                                    {isDone ? <Check size={20} className="text-white" /> : <RotateCcw size={18} className="text-dim group-hover:text-violet transition-colors" />}
-                                                </div>
-                                                <div className="flex flex-col items-end">
-                                                    <div className="font-pixel text-[10px] text-violet flex items-center gap-2">
-                                                        <Flame size={12} fill="currentColor" />
-                                                        <span>STREAK: {streak}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="relative z-10">
-                                                <h4 className={`font-pixel text-xs text-bright mb-2 ${isDone ? 'line-through opacity-50' : ''}`}>{q.title}</h4>
-                                                <div className="flex items-center gap-4">
-                                                    <div className="h-1.5 flex-1 bg-deep rounded-full overflow-hidden">
-                                                        <div
-                                                            className="h-full bg-violet"
-                                                            style={{ width: `${Math.min(100, (streak / 30) * 100)}%` }}
-                                                        ></div>
-                                                    </div>
-                                                    <span className="font-pixel text-[8px] text-dim">{(streak / 30 * 100).toFixed(0)}%</span>
-                                                </div>
-                                            </div>
-                                            <div className={`absolute -bottom-8 -right-8 w-24 h-24 bg-violet/5 blur-3xl rounded-full transition-opacity ${isDone ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}></div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            <button
-                                onClick={() => {
-                                    setNewQuestData(prev => ({ ...prev, category: 'HÁBITOS', isRecurring: true }));
-                                    setShowNewQuestModal(true);
-                                }}
-                                className="w-full mt-12 bg-surface/40 hover:bg-surface/60 border border-white/5 text-dim hover:text-bright font-pixel py-4 rounded-xl flex items-center justify-center gap-3 transition-all"
-                            >
-                                <Plus size={16} />
-                                <span className="text-[8px] tracking-[1px]">ADICIONAR NOVO HÁBITO</span>
-                            </button>
-                        </div>
-                    )}
-
-                    {activeTab === 'dash' && (
-                        <div className="animate-slide-up pb-24 max-w-4xl mx-auto space-y-12">
-                            {/* Header Dash */}
-                            <div className="flex items-center justify-between mb-8">
-                                <div>
-                                    <h2 className="font-pixel text-[20px] text-orange mb-2">SALA DE ANÁLISE</h2>
-                                    <p className="font-pixel text-[10px] text-dim uppercase tracking-[2px]">Relatório de Performance do Guerreiro</p>
-                                </div>
-                                <div className="dashboard-filter-container">
-                                    {[7, 30].map(p => (
-                                        <button
-                                            key={p}
-                                            onClick={() => setDashboardPeriod(p)}
-                                            className={`dashboard-filter-btn ${dashboardPeriod === p ? 'active' : ''}`}
-                                        >
-                                            {p} DIAS
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Stats Grid - Mantendo layout original da aba Início */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 !mt-0 !mb-0">
-                                {(() => {
-                                    const quests = user.quests || [];
-                                    const historyQuests = user.completedHistory || [];
-
-                                    const getStatsForDate = (dateObj) => {
-                                        const dKey = dateObj.toLocaleDateString();
-                                        const dIso = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
-
-                                        const recurring = quests.filter(q => q.isRecurring);
-                                        const nonRecurActive = quests.filter(q => !q.isRecurring && q.targetDate === dIso);
-                                        const nonRecurHistory = historyQuests.filter(q => (q.completedDates || []).includes(dKey));
-
-                                        const total = recurring.length + nonRecurActive.length + nonRecurHistory.length;
-                                        const done = recurring.filter(q => (q.completedDates || []).includes(dKey)).length + nonRecurHistory.length;
-
-                                        return { total, done };
-                                    };
-
-                                    const todayStats = getStatsForDate(new Date());
-                                    const todayQuests = todayStats.total;
-                                    const todayCompleted = todayStats.done;
-                                    const scoreHoje = todayQuests > 0 ? (todayCompleted / todayQuests) : 0;
-
-                                    const graphData = [];
-                                    for (let i = dashboardPeriod - 1; i >= 0; i--) {
-                                        const d = new Date();
-                                        d.setDate(d.getDate() - i);
-                                        const s = getStatsForDate(d);
-                                        graphData.push({
-                                            name: d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
-                                            performance: Math.round((s.total > 0 ? (s.done / s.total) : 0) * 100),
-                                            fullDate: d.toLocaleDateString()
-                                        });
-                                    }
-
-                                    const avgPeriod = graphData.reduce((a, b) => a + b.performance, 0) / graphData.length;
-                                    const bestDay = Math.max(...graphData.map(d => d.performance));
-
-                                    return (
-                                        <>
-                                            {[
-                                                { label: 'SCORE HOJE', value: `${Math.round(scoreHoje * 100)}%`, sub: 'MASTERY', color: '#f5a623', percentage: scoreHoje },
-                                                { label: 'CONCLUÍDAS', value: `${todayCompleted}/${todayQuests}`, sub: 'QUESTS', color: '#0091ff', percentage: scoreHoje },
-                                                { label: `MÉDIA ${dashboardPeriod}D`, value: `${Math.round(avgPeriod)}%`, sub: 'CONSISTÊNCIA', color: '#6e56cf', percentage: (avgPeriod / 100) },
-                                                { label: 'RÉCORDE', value: `${Math.round(bestDay)}%`, sub: 'PEAK', color: '#2ed573', percentage: (bestDay / 100) },
-                                            ].map(block => (
-                                                <div key={block.label} className="dashboard-card !p-4 border-white/5 hover:border-white/10 w-full">
-                                                    <div className="progress-circle-container !w-16 !h-16 !mb-2">
-                                                        <svg className="progress-circle-svg" width="60" height="60">
-                                                            <circle className="progress-circle-bg" cx="30" cy="30" r="26" strokeWidth="4" />
-                                                            <circle
-                                                                className="progress-circle-bar"
-                                                                cx="30" cy="30" r="26"
-                                                                stroke={block.color}
-                                                                strokeWidth="4"
-                                                                strokeDasharray={2 * Math.PI * 26}
-                                                                strokeDashoffset={2 * Math.PI * 26 * (1 - block.percentage)}
-                                                                strokeLinecap="round"
-                                                            />
-                                                        </svg>
-                                                        <div className="progress-text">
-                                                            <span className="progress-value !text-[10px]">{block.value}</span>
+                            <div className="flex-1 p-4 md:p-8 pt-44 pb-40">
+                                <div className="container mx-auto">
+                                    <Routes>
+                                        <Route path="/Inicio" element={
+                                            <div className="animate-slide-up">
+                                                <div className="hoje-grid">
+                                                    <div className="space-y-16">
+                                                        <div className="text-center mb-12">
+                                                            <h1 className="font-pixel text-3xl text-bright mb-2">Hoje</h1>
+                                                            <p className="font-pixel text-dim text-[10px] uppercase tracking-[2px]">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
                                                         </div>
-                                                    </div>
-                                                    <div className="mt-1">
-                                                        <div className="font-pixel text-[5px] text-dim uppercase tracking-widest">{block.sub}</div>
-                                                        <div className="font-pixel text-[7px] text-bright uppercase mt-0.5">{block.label}</div>
-                                                    </div>
-                                                </div>
-                                            ))}
 
-                                            {/* Gráfico de Performance */}
-                                            <div className="col-span-1 sm:col-span-2 lg:col-span-4 premium-card !p-6 md:!p-8 !bg-surface/30">
-                                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                                                    <h3 className="font-pixel text-[7px] md:text-[8px] text-bright flex items-center gap-2 leading-tight">
-                                                        <Activity size={12} className="text-orange shrink-0" />
-                                                        <span>GRÁFICO DE CONSTÂNCIA</span>
-                                                    </h3>
-                                                    <div className="flex items-center gap-2 self-end md:self-auto">
-                                                        <div className="w-2 h-2 rounded-full bg-orange/40 animate-pulse"></div>
-                                                        <span className="text-[8px] text-dim font-pixel uppercase tracking-widest">Eficiência %</span>
-                                                    </div>
-                                                </div>
+                                                        <section>
+                                                            <div className="flex items-center gap-3 mb-6">
+                                                                <FileText size={18} className="text-dim" />
+                                                                <h2 className="font-pixel text-[10px] text-bright tracking-[2px] uppercase">Tarefas</h2>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => {
+                                                                    setNewQuestData(prev => ({ ...prev, category: 'TAREFAS', isRecurring: false }));
+                                                                    setShowNewQuestModal(true);
+                                                                }}
+                                                                className="w-full bg-[#ff6b00] hover:bg-[#ff8533] text-deep font-bold py-5 rounded-2xl flex items-center justify-center gap-3 transition-all mb-12 shadow-lg shadow-orange/20"
+                                                            >
+                                                                <Plus size={20} className="stroke-[3px]" />
+                                                                <span className="font-pixel text-[10px] tracking-[2px]">NOVA TAREFA</span>
+                                                            </button>
 
-                                                <div className="h-[250px] w-full">
-                                                    <ResponsiveContainer width="100%" height="100%">
-                                                        <AreaChart data={graphData}>
-                                                            <defs>
-                                                                <linearGradient id="colorPerf" x1="0" y1="0" x2="0" y2="1">
-                                                                    <stop offset="5%" stopColor="#f5a623" stopOpacity={0.3} />
-                                                                    <stop offset="95%" stopColor="#f5a623" stopOpacity={0} />
-                                                                </linearGradient>
-                                                            </defs>
-                                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-                                                            <XAxis
-                                                                dataKey="name"
-                                                                axisLine={false}
-                                                                tickLine={false}
-                                                                tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8, fontFamily: 'var(--font-pixel)' }}
-                                                                dy={10}
-                                                            />
-                                                            <YAxis
-                                                                axisLine={false}
-                                                                tickLine={false}
-                                                                tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8, fontFamily: 'var(--font-pixel)' }}
-                                                                domain={[0, 100]}
-                                                            />
-                                                            <Tooltip
-                                                                contentStyle={{ backgroundColor: '#11141d', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontFamily: 'var(--font-pixel)', fontSize: '10px' }}
-                                                                itemStyle={{ color: '#f5a623' }}
-                                                                cursor={{ stroke: 'rgba(255,166,35,0.2)', strokeWidth: 2 }}
-                                                            />
-                                                            <Area
-                                                                type="monotone"
-                                                                dataKey="performance"
-                                                                stroke="#f5a623"
-                                                                strokeWidth={3}
-                                                                fillOpacity={1}
-                                                                fill="url(#colorPerf)"
-                                                            />
-                                                        </AreaChart>
-                                                    </ResponsiveContainer>
+                                                            <div className="space-y-4">
+                                                                {user.quests.filter(q => q.category === 'TAREFAS').length === 0 ? (
+                                                                    <div className="py-24 text-center opacity-40">
+                                                                        <div className="flex justify-center mb-6">
+                                                                            <div className="relative">
+                                                                                <ClipboardList size={48} className="text-dim/20" />
+                                                                                <Check size={24} className="text-dim/40 absolute -bottom-2 -right-2" />
+                                                                            </div>
+                                                                        </div>
+                                                                        <p className="font-pixel text-[11px] text-bright uppercase tracking-widest mb-2">Nenhuma tarefa encontrada</p>
+                                                                        <p className="font-pixel text-[8px] text-dim uppercase tracking-wider">Ajuste os filtros ou adicione uma tarefa</p>
+                                                                    </div>
+                                                                ) : (
+                                                                    user.quests.filter(q => q.category === 'TAREFAS').map(q => {
+                                                                        const currentDayKey = new Date().toLocaleDateString();
+                                                                        const isDone = (q.completedDates || []).includes(currentDayKey);
+                                                                        return (
+                                                                            <div
+                                                                                key={q.id}
+                                                                                onClick={() => handleComplete(q.id)}
+                                                                                className={`hoje-task-item ${isDone ? 'opacity-40 grayscale' : ''}`}
+                                                                            >
+                                                                                <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${isDone ? 'bg-orange border-orange shadow-[0_0_15px_rgba(255,107,0,0.4)]' : 'border-white/10 group-hover:border-orange/50'}`}>
+                                                                                    {isDone && <Check size={16} className="text-deep stroke-[3px]" />}
+                                                                                </div>
+                                                                                <div className="flex-1">
+                                                                                    <p className={`font-pixel text-xs text-bright mb-1 ${isDone ? 'line-through' : ''}`}>{q.title}</p>
+                                                                                    <span className="font-pixel text-[8px] text-dim uppercase tracking-wider">{q.priority} • {q.time}</span>
+                                                                                </div>
+                                                                                <div className="px-3 h-8 rounded-lg bg-surface flex items-center justify-center border border-white/5">
+                                                                                    <span className="font-pixel text-[8px] text-orange">{q.difficulty || 5}</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        );
+                                                                    })
+                                                                )}
+                                                            </div>
+                                                        </section>
+
+                                                        <section>
+                                                            <div className="flex items-center gap-3 mb-6">
+                                                                <Layout size={18} className="text-blue" />
+                                                                <h2 className="font-pixel text-[10px] text-bright tracking-[2px] uppercase">Hábitos de Hoje</h2>
+                                                            </div>
+                                                            <div className="space-y-4">
+                                                                {user.quests.filter(q => q.category === 'HÁBITOS' || q.isRecurring).length === 0 ? (
+                                                                    <div className="py-12 text-center opacity-20 border border-dashed border-white/5 rounded-2xl">
+                                                                        <p className="font-pixel text-[8px] uppercase tracking-widest">Ritual diário não definido</p>
+                                                                    </div>
+                                                                ) : (
+                                                                    user.quests.filter(q => q.category === 'HÁBITOS' || q.isRecurring).map(q => {
+                                                                        const currentDayKey = new Date().toLocaleDateString();
+                                                                        const isDone = (q.completedDates || []).includes(currentDayKey);
+                                                                        return (
+                                                                            <div
+                                                                                key={q.id}
+                                                                                onClick={() => handleComplete(q.id)}
+                                                                                className={`hoje-task-item !bg-[#0d1117] border-white/5 hover:border-blue/30 ${isDone ? 'opacity-40' : ''}`}
+                                                                            >
+                                                                                <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${isDone ? 'bg-blue border-blue shadow-[0_0_15px_rgba(0,145,255,0.4)]' : 'border-white/10'}`}>
+                                                                                    {isDone && <Check size={16} className="text-deep stroke-[3px]" />}
+                                                                                </div>
+                                                                                <div className="flex-1">
+                                                                                    <p className={`font-pixel text-[11px] text-bright mb-1 ${isDone ? 'line-through' : ''}`}>{q.title}</p>
+                                                                                </div>
+                                                                                <div className="px-3 h-8 rounded-lg bg-surface flex items-center justify-center border border-white/5">
+                                                                                    <span className="font-pixel text-[8px] text-blue">{(q.completedDates || []).length}</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        );
+                                                                    })
+                                                                )}
+                                                            </div>
+                                                        </section>
+                                                    </div>
+
+                                                    <aside className="summary-sidebar">
+                                                        <h3 className="font-pixel text-[12px] text-bright tracking-[2px] mb-6 uppercase">Resumo</h3>
+                                                        <div className="summary-grid">
+                                                            {(() => {
+                                                                const todayKeyStr = new Date().toLocaleDateString();
+                                                                const tsks = user.quests.filter(q => q.category === 'TAREFAS');
+                                                                const hbts = user.quests.filter(q => q.category === 'HÁBITOS' || q.isRecurring);
+                                                                const dTsks = tsks.filter(q => (q.completedDates || []).includes(todayKeyStr)).length;
+                                                                const dHbts = hbts.filter(q => (q.completedDates || []).includes(todayKeyStr)).length;
+                                                                const tDiff = tsks.reduce((acc, q) => acc + (q.difficulty || 5), 0);
+                                                                const dDiff = tsks.filter(q => (q.completedDates || []).includes(todayKeyStr)).reduce((acc, q) => acc + (q.difficulty || 5), 0);
+                                                                const totalCount = tsks.length + hbts.length;
+
+                                                                return [
+                                                                    { label: 'Score Total', value: totalCount > 0 ? Math.round(((dTsks + dHbts) / totalCount) * 100) : 0, sub: `Tarefas: ${dTsks} | Hábitos: ${dHbts}`, icon: Flame, color: 'text-orange', bg: 'bg-orange/10' },
+                                                                    { label: 'Tarefas', value: `${dTsks}/${tsks.length}`, sub: 'Tarefas Diárias', icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-500/10' },
+                                                                    { label: 'Hábitos', value: `${dHbts}/${hbts.length}`, sub: 'Consistência', icon: RotateCcw, color: 'text-orange', bg: 'bg-orange/10' },
+                                                                    { label: 'Peso Tarefas', value: `${dDiff}/${tDiff}`, sub: 'Valor Heroico', icon: Target, color: 'text-hp-red', bg: 'bg-hp-red/10' },
+                                                                ].map(item => (
+                                                                    <div key={item.label} className="summary-card !bg-[#11141d] border-white/5 p-6 rounded-[24px]">
+                                                                        <div className={`w-8 h-8 rounded-lg ${item.bg} flex items-center justify-center mb-4`}>
+                                                                            <item.icon size={16} className={item.color} />
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="font-pixel text-xl text-bright mb-1">{item.value}</p>
+                                                                            <p className="font-pixel text-[8px] text-bright/80 uppercase tracking-widest">{item.label}</p>
+                                                                            {item.sub && <p className="font-pixel text-[6px] text-dim mt-2 uppercase tracking-tighter">{item.sub}</p>}
+                                                                        </div>
+                                                                    </div>
+                                                                ))
+                                                            })()}
+                                                        </div>
+                                                    </aside>
                                                 </div>
                                             </div>
-                                        </>
-                                    );
-                                })()}
-                            </div>
-                        </div>
-                    )}
+                                        } />
 
-
-
-
-                    {activeTab === 'calendar' && (
-                        <div className="animate-slide-up calendar-container">
-                            <div className="flex items-center justify-between mb-8 px-4">
-                                <div>
-                                    <h2 className="font-pixel text-[12px] text-orange mb-2">MAPA TEMPORAL</h2>
-                                    <p className="font-pixel text-[7px] text-dim uppercase tracking-[2px]">Visão Estratégica do Mês</p>
-                                </div>
-                                <div className="flex items-center gap-4 bg-surface/30 p-2 rounded-2xl border border-white/5 font-pixel text-[8px]">
-                                    <button
-                                        onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1))}
-                                        className="text-dim hover:text-orange text-lg px-2"
-                                    >‹</button>
-                                    <span className="uppercase">{calendarDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
-                                    <button
-                                        onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1))}
-                                        className="text-dim hover:text-orange text-lg px-2"
-                                    >›</button>
-                                </div>
-                            </div>
-
-                            <div className="premium-card !p-4 md:!p-6 !bg-surface/20 border-white/5 overflow-hidden">
-                                <div className="calendar-grid-header">
-                                    {['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'].map(d => (
-                                        <div key={d} className="text-center font-pixel text-[6px] text-dim opacity-50">{d}</div>
-                                    ))}
-                                </div>
-
-                                <div className="calendar-grid-days">
-                                    {(() => {
-                                        const days = [];
-                                        const firstDay = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1);
-                                        const lastDay = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 0);
-
-                                        for (let i = 0; i < firstDay.getDay(); i++) {
-                                            days.push(<div key={`empty-${i}`} className="calendar-empty-cell" />);
-                                        }
-
-                                        for (let d = 1; d <= lastDay.getDate(); d++) {
-                                            const currentDayDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), d);
-                                            const dateKey = currentDayDate.toLocaleDateString();
-                                            const dateIso = `${currentDayDate.getFullYear()}-${String(currentDayDate.getMonth() + 1).padStart(2, '0')}-${String(currentDayDate.getDate()).padStart(2, '0')}`;
-                                            const isToday = new Date().toLocaleDateString() === dateKey;
-
-                                            const hasRecurring = (user.quests || []).some(q => q.isRecurring);
-                                            const singleQuests = (user.quests || []).filter(q => !q.isRecurring && q.targetDate === dateIso);
-
-                                            days.push(
-                                                <div key={d} className={`calendar-day-box ${isToday ? 'is-today' : ''}`}>
-                                                    <div className={`calendar-day-number ${isToday ? 'text-orange font-bold' : 'text-dim'}`}>
-                                                        {d}
+                                        <Route path="/Tarefas" element={
+                                            <div className="animate-slide-up pb-24 max-w-5xl mx-auto space-y-8">
+                                                {/* Header com Toggle */}
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div>
+                                                        <h2 className="font-pixel text-xl text-bright mb-1 uppercase tracking-tight">Tarefas</h2>
+                                                        <p className="font-pixel text-[8px] text-dim uppercase tracking-widest">Gerencie suas tarefas</p>
                                                     </div>
+                                                    <div className="flex items-center bg-surface/40 p-1 rounded-xl border border-white/5">
+                                                        <button className="p-2 bg-orange/10 text-orange rounded-lg shadow-[0_0_15px_rgba(255,107,0,0.2)]">
+                                                            <ClipboardList size={18} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => navigate('/Calendario')}
+                                                            className="p-2 text-dim hover:text-bright transition-colors"
+                                                        >
+                                                            <Calendar size={18} />
+                                                        </button>
+                                                    </div>
+                                                </div>
 
-                                                    {hasRecurring && (
-                                                        <div className="recurrence-flag">
-                                                            <Flag size={12} fill="currentColor" />
+                                                {/* Botão Nova Tarefa Laranja */}
+                                                <button
+                                                    onClick={() => {
+                                                        setNewQuestData(prev => ({ ...prev, category: 'TAREFAS', isRecurring: false }));
+                                                        setShowNewQuestModal(true);
+                                                    }}
+                                                    className="w-full bg-orange hover:bg-orange-light text-deep font-pixel py-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-orange/20"
+                                                >
+                                                    <Plus size={20} className="stroke-[3px]" />
+                                                    <span className="text-[10px] font-bold tracking-[2px] uppercase">Nova Tarefa</span>
+                                                </button>
+
+                                                {/* Filtros */}
+                                                <div className="flex flex-wrap items-center gap-3">
+                                                    <div className="flex-1 min-w-[200px] relative">
+                                                        <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-dim" />
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Buscar tarefas..."
+                                                            className="w-full pl-10 pr-4 py-3 bg-surface/30 border border-white/5 rounded-xl text-[10px] font-pixel placeholder:text-dim/50 focus:border-orange/30 outline-none transition-all"
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-center gap-2 px-4 py-3 bg-surface/30 border border-white/5 rounded-xl cursor-not-allowed opacity-80">
+                                                        <span className="font-pixel text-[10px] text-bright uppercase tracking-wider">Hoje</span>
+                                                        <ChevronDown size={14} className="text-dim" />
+                                                    </div>
+                                                    <div className="flex items-center gap-2 px-4 py-3 bg-surface/30 border border-white/5 rounded-xl cursor-not-allowed opacity-80">
+                                                        <span className="font-pixel text-[10px] text-bright uppercase tracking-wider">Todos status</span>
+                                                        <ChevronDown size={14} className="text-dim" />
+                                                    </div>
+                                                    <div className="p-3 bg-surface/30 border border-white/5 rounded-xl text-dim hover:text-bright transition-colors cursor-pointer">
+                                                        <Activity size={14} />
+                                                    </div>
+                                                    <div className="flex items-center gap-2 px-4 py-3 bg-surface/30 border border-white/5 rounded-xl text-dim hover:text-bright transition-colors cursor-pointer">
+                                                        <span className="font-pixel text-[10px] uppercase tracking-wider">Mais...</span>
+                                                        <ChevronDown size={14} />
+                                                    </div>
+                                                </div>
+
+                                                <div className="pt-12">
+                                                    {user.quests.filter(q => q.category === 'TAREFAS').length === 0 ? (
+                                                        <div className="py-24 text-center">
+                                                            <div className="flex justify-center mb-8">
+                                                                <div className="relative opacity-30">
+                                                                    <ClipboardList size={64} className="text-dim/40" />
+                                                                    <Check size={32} className="text-dim absolute -bottom-2 -right-2" />
+                                                                </div>
+                                                            </div>
+                                                            <p className="font-pixel text-[12px] text-bright uppercase tracking-[3px] mb-3">Nenhuma tarefa encontrada</p>
+                                                            <p className="font-pixel text-[8px] text-dim uppercase tracking-[2px]">Ajuste os filtros ou adicione uma tarefa</p>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="grid gap-4">
+                                                            {user.quests.filter(q => q.category === 'TAREFAS').map(q => {
+                                                                const currentDayKey = new Date().toLocaleDateString();
+                                                                const isDone = (q.completedDates || []).includes(currentDayKey);
+                                                                return (
+                                                                    <div
+                                                                        key={q.id}
+                                                                        onClick={() => handleComplete(q.id)}
+                                                                        className={`premium-card !p-6 flex items-center gap-6 border-white/5 hover:border-orange/30 transition-all cursor-pointer group ${isDone ? 'opacity-40 grayscale' : ''}`}
+                                                                    >
+                                                                        <div className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all ${isDone ? 'bg-orange border-orange shadow-[0_0_20px_rgba(255,107,0,0.4)]' : 'border-white/10 group-hover:border-orange/50'}`}>
+                                                                            {isDone ? <Check size={24} className="text-deep stroke-[3px]" /> : <div className="w-2 h-2 rounded-full bg-orange opacity-50 pulse-orange"></div>}
+                                                                        </div>
+                                                                        <div className="flex-1">
+                                                                            <div className="flex items-center gap-3 mb-1">
+                                                                                <p className={`font-pixel text-sm text-bright ${isDone ? 'line-through text-dim' : ''}`}>{q.title}</p>
+                                                                                <span className={`px-2 py-0.5 rounded-[4px] text-[8px] font-pixel border ${q.priority === 'Alta' ? 'bg-hp-red/10 border-hp-red/30 text-hp-red shadow-[0_0_10px_rgba(229,72,77,0.1)]' : 'bg-surface border-white/10 text-dim'}`}>{q.priority}</span>
+                                                                            </div>
+                                                                            <p className="text-[10px] text-dim font-pixel tracking-wide opacity-60">{q.desc}</p>
+                                                                        </div>
+                                                                        <div className="text-right">
+                                                                            <div className="font-pixel text-[12px] text-orange mb-1">+{q.xpReward} XP</div>
+                                                                            <div className="font-pixel text-[8px] text-dim tracking-widest uppercase">{q.time}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
                                                         </div>
                                                     )}
+                                                </div>
+                                            </div>
+                                        } />
 
-                                                    <div className="flex flex-col gap-1 overflow-y-auto no-scrollbar flex-1">
-                                                        {singleQuests.map(q => {
-                                                            const isDone = (q.completedDates || []).includes(dateKey);
-                                                            const priorityClass = `calendar-priority-${(q.priority || 'NORMAL').toLowerCase()}`;
+                                        <Route path="/Habitos" element={
+                                            <div className="animate-slide-up pb-24 max-w-4xl mx-auto">
+                                                <header className="mb-12">
+                                                    <div className="flex items-center gap-4 mb-2">
+                                                        <RotateCcw size={32} className="text-violet" />
+                                                        <h2 className="font-pixel text-2xl text-bright">Ritual Diário</h2>
+                                                    </div>
+                                                    <p className="font-pixel text-dim text-[8px] uppercase tracking-[4px]">Consistência é a Verdadeira Magia</p>
+                                                </header>
 
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    {user.quests.filter(q => q.category === 'HÁBITOS' || q.isRecurring).map(q => {
+                                                        const currentDayKey = new Date().toLocaleDateString();
+                                                        const isDone = (q.completedDates || []).includes(currentDayKey);
+                                                        const streak = (q.completedDates || []).length;
+
+                                                        return (
+                                                            <div
+                                                                key={q.id}
+                                                                onClick={() => handleComplete(q.id)}
+                                                                className={`premium-card !p-8 bg-surface/20 border-white/5 hover:border-violet/30 transition-all cursor-pointer relative overflow-hidden group ${isDone ? 'opacity-50' : ''}`}
+                                                            >
+                                                                <div className="flex justify-between items-start mb-6 relative z-10">
+                                                                    <div className={`w-10 h-10 rounded-xl border-2 flex items-center justify-center transition-all ${isDone ? 'bg-violet border-violet shadow-[0_0_15px_rgba(110,86,207,0.4)]' : 'border-white/10 group-hover:border-violet/50'}`}>
+                                                                        {isDone ? <Check size={20} className="text-white" /> : <RotateCcw size={18} className="text-dim group-hover:text-violet transition-colors" />}
+                                                                    </div>
+                                                                    <div className="flex flex-col items-end">
+                                                                        <div className="font-pixel text-[10px] text-violet flex items-center gap-2">
+                                                                            <Flame size={12} fill="currentColor" />
+                                                                            <span>STREAK: {streak}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="relative z-10">
+                                                                    <h4 className={`font-pixel text-xs text-bright mb-2 ${isDone ? 'line-through opacity-50' : ''}`}>{q.title}</h4>
+                                                                    <div className="flex items-center gap-4">
+                                                                        <div className="h-1.5 flex-1 bg-deep rounded-full overflow-hidden">
+                                                                            <div
+                                                                                className="h-full bg-violet"
+                                                                                style={{ width: `${Math.min(100, (streak / 30) * 100)}%` }}
+                                                                            ></div>
+                                                                        </div>
+                                                                        <span className="font-pixel text-[8px] text-dim">{(streak / 30 * 100).toFixed(0)}%</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className={`absolute -bottom-8 -right-8 w-24 h-24 bg-violet/5 blur-3xl rounded-full transition-opacity ${isDone ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}></div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+
+                                                <button
+                                                    onClick={() => {
+                                                        setNewQuestData(prev => ({ ...prev, category: 'HÁBITOS', isRecurring: true }));
+                                                        setShowNewQuestModal(true);
+                                                    }}
+                                                    className="w-full mt-12 bg-surface/40 hover:bg-surface/60 border border-white/5 text-dim hover:text-bright font-pixel py-4 rounded-xl flex items-center justify-center gap-3 transition-all"
+                                                >
+                                                    <Plus size={16} />
+                                                    <span className="text-[8px] tracking-[1px]">ADICIONAR NOVO HÁBITO</span>
+                                                </button>
+                                            </div>
+                                        } />
+
+                                        <Route path="/Dashboard" element={
+                                            <div className="animate-slide-up pb-24 max-w-4xl mx-auto space-y-12">
+                                                {/* Header Dash */}
+                                                <div className="flex items-center justify-between mb-8">
+                                                    <div>
+                                                        <h2 className="font-pixel text-[20px] text-orange mb-2">SALA DE ANÁLISE</h2>
+                                                        <p className="font-pixel text-[10px] text-dim uppercase tracking-[2px]">Relatório de Performance do Guerreiro</p>
+                                                    </div>
+                                                    <div className="dashboard-filter-container">
+                                                        {[7, 30].map(p => (
+                                                            <button
+                                                                key={p}
+                                                                onClick={() => setDashboardPeriod(p)}
+                                                                className={`dashboard-filter-btn ${dashboardPeriod === p ? 'active' : ''}`}
+                                                            >
+                                                                {p} DIAS
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Stats Grid - Mantendo layout original da aba Início */}
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 !mt-0 !mb-0">
+                                                    {(() => {
+                                                        const quests = user.quests || [];
+                                                        const historyQuests = user.completedHistory || [];
+
+                                                        const getStatsForDate = (dateObj) => {
+                                                            const dKey = dateObj.toLocaleDateString();
+                                                            const dIso = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+
+                                                            const recurring = quests.filter(q => q.isRecurring);
+                                                            const nonRecurActive = quests.filter(q => !q.isRecurring && q.targetDate === dIso);
+                                                            const nonRecurHistory = historyQuests.filter(q => (q.completedDates || []).includes(dKey));
+
+                                                            const total = recurring.length + nonRecurActive.length + nonRecurHistory.length;
+                                                            const done = recurring.filter(q => (q.completedDates || []).includes(dKey)).length + nonRecurHistory.length;
+
+                                                            return { total, done };
+                                                        };
+
+                                                        const todayStats = getStatsForDate(new Date());
+                                                        const todayQuests = todayStats.total;
+                                                        const todayCompleted = todayStats.done;
+                                                        const scoreHoje = todayQuests > 0 ? (todayCompleted / todayQuests) : 0;
+
+                                                        const graphData = [];
+                                                        for (let i = dashboardPeriod - 1; i >= 0; i--) {
+                                                            const d = new Date();
+                                                            d.setDate(d.getDate() - i);
+                                                            const s = getStatsForDate(d);
+                                                            graphData.push({
+                                                                name: d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+                                                                performance: Math.round((s.total > 0 ? (s.done / s.total) : 0) * 100),
+                                                                fullDate: d.toLocaleDateString()
+                                                            });
+                                                        }
+
+                                                        const avgPeriod = graphData.reduce((a, b) => a + b.performance, 0) / graphData.length;
+                                                        const bestDay = Math.max(...graphData.map(d => d.performance));
+
+                                                        return (
+                                                            <>
+                                                                {[
+                                                                    { label: 'SCORE HOJE', value: `${Math.round(scoreHoje * 100)}%`, sub: 'MASTERY', color: '#f5a623', percentage: scoreHoje },
+                                                                    { label: 'CONCLUÍDAS', value: `${todayCompleted}/${todayQuests}`, sub: 'QUESTS', color: '#0091ff', percentage: scoreHoje },
+                                                                    { label: `MÉDIA ${dashboardPeriod}D`, value: `${Math.round(avgPeriod)}%`, sub: 'CONSISTÊNCIA', color: '#6e56cf', percentage: (avgPeriod / 100) },
+                                                                    { label: 'RÉCORDE', value: `${Math.round(bestDay)}%`, sub: 'PEAK', color: '#2ed573', percentage: (bestDay / 100) },
+                                                                ].map(block => (
+                                                                    <div key={block.label} className="dashboard-card !p-4 border-white/5 hover:border-white/10 w-full">
+                                                                        <div className="progress-circle-container !w-16 !h-16 !mb-2">
+                                                                            <svg className="progress-circle-svg" width="60" height="60">
+                                                                                <circle className="progress-circle-bg" cx="30" cy="30" r="26" strokeWidth="4" />
+                                                                                <circle
+                                                                                    className="progress-circle-bar"
+                                                                                    cx="30" cy="30" r="26"
+                                                                                    stroke={block.color}
+                                                                                    strokeWidth="4"
+                                                                                    strokeDasharray={2 * Math.PI * 26}
+                                                                                    strokeDashoffset={2 * Math.PI * 26 * (1 - block.percentage)}
+                                                                                    strokeLinecap="round"
+                                                                                />
+                                                                            </svg>
+                                                                            <div className="progress-text">
+                                                                                <span className="progress-value !text-[10px]">{block.value}</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="mt-1">
+                                                                            <div className="font-pixel text-[5px] text-dim uppercase tracking-widest">{block.sub}</div>
+                                                                            <div className="font-pixel text-[7px] text-bright uppercase mt-0.5">{block.label}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+
+                                                                {/* Gráfico de Performance */}
+                                                                <div className="col-span-1 sm:col-span-2 lg:col-span-4 premium-card !p-6 md:!p-8 !bg-surface/30">
+                                                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                                                                        <h3 className="font-pixel text-[7px] md:text-[8px] text-bright flex items-center gap-2 leading-tight">
+                                                                            <Activity size={12} className="text-orange shrink-0" />
+                                                                            <span>GRÁFICO DE CONSTÂNCIA</span>
+                                                                        </h3>
+                                                                        <div className="flex items-center gap-2 self-end md:self-auto">
+                                                                            <div className="w-2 h-2 rounded-full bg-orange/40 animate-pulse"></div>
+                                                                            <span className="text-[8px] text-dim font-pixel uppercase tracking-widest">Eficiência %</span>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div className="h-[250px] w-full">
+                                                                        <ResponsiveContainer width="100%" height="100%">
+                                                                            <AreaChart data={graphData}>
+                                                                                <defs>
+                                                                                    <linearGradient id="colorPerf" x1="0" y1="0" x2="0" y2="1">
+                                                                                        <stop offset="5%" stopColor="#f5a623" stopOpacity={0.3} />
+                                                                                        <stop offset="95%" stopColor="#f5a623" stopOpacity={0} />
+                                                                                    </linearGradient>
+                                                                                </defs>
+                                                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                                                                                <XAxis
+                                                                                    dataKey="name"
+                                                                                    axisLine={false}
+                                                                                    tickLine={false}
+                                                                                    tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8, fontFamily: 'var(--font-pixel)' }}
+                                                                                    dy={10}
+                                                                                />
+                                                                                <YAxis
+                                                                                    axisLine={false}
+                                                                                    tickLine={false}
+                                                                                    tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 8, fontFamily: 'var(--font-pixel)' }}
+                                                                                    domain={[0, 100]}
+                                                                                />
+                                                                                <Tooltip
+                                                                                    contentStyle={{ backgroundColor: '#11141d', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontFamily: 'var(--font-pixel)', fontSize: '10px' }}
+                                                                                    itemStyle={{ color: '#f5a623' }}
+                                                                                    cursor={{ stroke: 'rgba(255,166,35,0.2)', strokeWidth: 2 }}
+                                                                                />
+                                                                                <Area
+                                                                                    type="monotone"
+                                                                                    dataKey="performance"
+                                                                                    stroke="#f5a623"
+                                                                                    strokeWidth={3}
+                                                                                    fillOpacity={1}
+                                                                                    fill="url(#colorPerf)"
+                                                                                />
+                                                                            </AreaChart>
+                                                                        </ResponsiveContainer>
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        );
+                                                    })()}
+                                                </div>
+                                            </div>
+                                        } />
+
+
+
+
+                                        <Route path="/Calendario" element={
+                                            <div className="animate-slide-up calendar-container">
+                                                <div className="flex items-center justify-between mb-8 px-4">
+                                                    <div>
+                                                        <h2 className="font-pixel text-[12px] text-orange mb-2">MAPA TEMPORAL</h2>
+                                                        <p className="font-pixel text-[7px] text-dim uppercase tracking-[2px]">Visão Estratégica do Mês</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-4 bg-surface/30 p-2 rounded-2xl border border-white/5 font-pixel text-[8px]">
+                                                        <button
+                                                            onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1))}
+                                                            className="text-dim hover:text-orange text-lg px-2"
+                                                        >‹</button>
+                                                        <span className="uppercase">{calendarDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
+                                                        <button
+                                                            onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1))}
+                                                            className="text-dim hover:text-orange text-lg px-2"
+                                                        >›</button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="premium-card !p-4 md:!p-6 !bg-surface/20 border-white/5 overflow-hidden">
+                                                    <div className="calendar-grid-header">
+                                                        {['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'].map(d => (
+                                                            <div key={d} className="text-center font-pixel text-[6px] text-dim opacity-50">{d}</div>
+                                                        ))}
+                                                    </div>
+
+                                                    <div className="calendar-grid-days">
+                                                        {(() => {
+                                                            const days = [];
+                                                            const firstDay = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1);
+                                                            const lastDay = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 0);
+
+                                                            for (let i = 0; i < firstDay.getDay(); i++) {
+                                                                days.push(<div key={`empty-${i}`} className="calendar-empty-cell" />);
+                                                            }
+
+                                                            for (let d = 1; d <= lastDay.getDate(); d++) {
+                                                                const currentDayDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), d);
+                                                                const dateKey = currentDayDate.toLocaleDateString();
+                                                                const dateIso = `${currentDayDate.getFullYear()}-${String(currentDayDate.getMonth() + 1).padStart(2, '0')}-${String(currentDayDate.getDate()).padStart(2, '0')}`;
+                                                                const isToday = new Date().toLocaleDateString() === dateKey;
+
+                                                                const hasRecurring = (user.quests || []).some(q => q.isRecurring);
+                                                                const singleQuests = (user.quests || []).filter(q => !q.isRecurring && q.targetDate === dateIso);
+
+                                                                days.push(
+                                                                    <div key={d} className={`calendar-day-box ${isToday ? 'is-today' : ''}`}>
+                                                                        <div className={`calendar-day-number ${isToday ? 'text-orange font-bold' : 'text-dim'}`}>
+                                                                            {d}
+                                                                        </div>
+
+                                                                        {hasRecurring && (
+                                                                            <div className="recurrence-flag">
+                                                                                <Flag size={12} fill="currentColor" />
+                                                                            </div>
+                                                                        )}
+
+                                                                        <div className="flex flex-col gap-1 overflow-y-auto no-scrollbar flex-1">
+                                                                            {singleQuests.map(q => {
+                                                                                const isDone = (q.completedDates || []).includes(dateKey);
+                                                                                const priorityClass = `calendar-priority-${(q.priority || 'NORMAL').toLowerCase()}`;
+
+                                                                                return (
+                                                                                    <div
+                                                                                        key={q.id}
+                                                                                        onClick={() => handleCalendarQuestClick(q.id)}
+                                                                                        className={`calendar-quest-item ${priorityClass}`}
+                                                                                    >
+                                                                                        <div className={`w-1 h-1 rounded-full shrink-0 ${isDone ? 'bg-green-400' : 'bg-white/40'}`}></div>
+                                                                                        <span className={`calendar-quest-text ${isDone ? 'line-through opacity-50' : ''}`}>
+                                                                                            {q.title}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                );
+                                                                            })}
+                                                                        </div>
+                                                                        {isToday && <div className="absolute bottom-2 right-2 opacity-30"><Zap size={10} className="text-orange" /></div>}
+                                                                    </div>
+                                                                );
+                                                            }
+                                                            return days;
+                                                        })()}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        } />
+
+                                        <Route path="/Conquistas" element={
+                                            <div className="animate-slide-up pb-20 max-w-4xl mx-auto">
+                                                {/* Oracle Section */}
+                                                <div className="master-say mb-12 relative p-8 bg-surface/40 border-violet/50 rounded-[32px]">
+                                                    <div className="master-badge !bg-violet-dark text-[7px] px-4 py-1.5 uppercase tracking-[2px]">ORÁCULO</div>
+                                                    <div className="w-16 h-16 rounded-2xl bg-deep border-2 border-violet/30 flex items-center justify-center shadow-[0_0_20px_rgba(110,86,207,0.2)]">
+                                                        <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=oracle&backgroundColor=05070a" className="w-10 h-10" alt="Oracle" />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <p className="font-pixel text-sm text-bright italic leading-relaxed">"O Protocolo Anti-Gravity foi iniciado."</p>
+                                                        <p className="font-pixel text-[7px] text-violet mt-3 uppercase tracking-[2px] opacity-70">Sincronizar com o vácuo</p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Day Selector */}
+                                                <div className="flex justify-center gap-3 mb-12">
+                                                    {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day, idx) => (
+                                                        <button
+                                                            key={day}
+                                                            onClick={() => setSelectedDay(idx)}
+                                                            className={`w-14 h-10 rounded-xl font-pixel text-[8px] transition-all flex items-center justify-center border ${selectedDay === idx ? 'bg-violet border-violet text-white shadow-[0_4px_15px_rgba(110,86,207,0.4)]' : 'bg-surface/50 border-border md:hover:border-violet/50 text-dim'}`}
+                                                        >
+                                                            {day}
+                                                        </button>
+                                                    ))}
+                                                </div>
+
+                                                {/* Protocol Area */}
+                                                <div className="premium-card p-12 bg-surface/20 border-violet/20 rounded-[40px] text-center mb-8 min-h-[400px] flex flex-col justify-center items-center relative overflow-hidden">
+                                                    {!isProtocolActive ? (
+                                                        <div className="space-y-12 animate-slide-up w-full">
+                                                            <h2 className="font-pixel text-sm text-dim tracking-[4px] opacity-50 uppercase">
+                                                                FORGE ANTI-GRAVITY: {workoutType === 'superiores' ? 'SUPERIOR' : 'INFERIOR'}
+                                                            </h2>
+
+                                                            <div className="flex gap-6 justify-center">
+                                                                <button
+                                                                    onClick={() => setWorkoutType('superiores')}
+                                                                    className={`px-6 py-3 rounded-full font-pixel text-[7px] border transition-all ${workoutType === 'superiores' ? 'bg-violet border-violet text-white' : 'bg-deep border-border text-dim'}`}
+                                                                >
+                                                                    SUPERIOR
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => setWorkoutType('inferiores')}
+                                                                    className={`px-6 py-3 rounded-full font-pixel text-[7px] border transition-all ${workoutType === 'inferiores' ? 'bg-hp-red border-hp-red text-white' : 'bg-deep border-border text-dim'}`}
+                                                                >
+                                                                    INFERIOR
+                                                                </button>
+                                                            </div>
+
+                                                            <button
+                                                                onClick={() => setIsProtocolActive(true)}
+                                                                className="btn-premium max-w-sm mx-auto !h-16 !rounded-2xl shadow-[0_0_30px_rgba(110,86,207,0.3)] hover:scale-105 transition-transform"
+                                                            >
+                                                                INVOCAR PROTOCOLO IA
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="w-full animate-slide-up">
+                                                            <div className="flex items-center justify-between mb-8">
+                                                                <h3 className="font-pixel text-[10px] text-violet uppercase tracking-widest">Protocolo Ativo: {workoutType}</h3>
+                                                                <button
+                                                                    onClick={() => { setIsProtocolActive(false); setWorkoutDone([]); }}
+                                                                    className="font-pixel text-[7px] text-dim hover:text-hp-red transition-colors"
+                                                                >
+                                                                    [ CANCELAR ]
+                                                                </button>
+                                                            </div>
+
+                                                            <div className="overflow-x-auto">
+                                                                <table className="w-full text-left font-pixel">
+                                                                    <thead>
+                                                                        <tr className="border-b border-border/50">
+                                                                            <th className="py-4 text-[7px] text-dim uppercase">NOME</th>
+                                                                            <th className="py-4 text-[7px] text-dim uppercase text-center">CARGA</th>
+                                                                            <th className="py-4 text-[7px] text-dim text-right pr-4 uppercase">CHECK</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {WORKOUTS[workoutType].map(ex => (
+                                                                            <tr
+                                                                                key={ex.id}
+                                                                                onClick={() => toggleExercise(ex.id)}
+                                                                                className="border-b border-border/20 hover:bg-violet/5 transition-colors cursor-pointer group"
+                                                                            >
+                                                                                <td className="py-5">
+                                                                                    <span className="text-sm font-bold text-bright tracking-wide block">{ex.name}</span>
+                                                                                </td>
+                                                                                <td className="py-5 text-center">
+                                                                                    <span className="text-[10px] text-violet bg-violet/10 px-3 py-1.5 rounded-lg border border-violet/20">
+                                                                                        {ex.detail}
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td className="py-5 text-right pr-4">
+                                                                                    <div className={`w-6 h-6 border-2 flex items-center justify-center rounded-lg transition-all ml-auto ${workoutDone.includes(ex.id) ? 'bg-violet border-violet shadow-[0_0_10px_rgba(110,86,207,0.5)]' : 'border-border group-hover:border-violet/50'}`}>
+                                                                                        {workoutDone.includes(ex.id) && <CheckCircle2 size={12} className="text-white" />}
+                                                                                    </div>
+                                                                                </td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+
+                                                            <div className="mt-12 space-y-8">
+                                                                <div className="w-full bg-deep h-1.5 rounded-full overflow-hidden border border-border/30">
+                                                                    <div
+                                                                        className="h-full bg-violet shadow-[0_0_15px_purple] transition-all duration-700 ease-out"
+                                                                        style={{ width: `${(workoutDone.length / WORKOUTS[workoutType].length) * 100}%` }}
+                                                                    />
+                                                                </div>
+                                                                <button
+                                                                    onClick={finishWorkoutQuest}
+                                                                    className={`btn-premium !h-14 !rounded-xl text-[9px] ${isWorkoutComplete() ? 'animate-pulse' : 'opacity-30 grayscale cursor-not-allowed'}`}
+                                                                >
+                                                                    SINCRONIZAR PROGRESSO
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        } />
+
+                                        <Route path="/Categorias" element={
+                                            <div className="animate-slide-up pb-24 max-w-5xl mx-auto space-y-8">
+                                                {/* Header IA Reorganizado */}
+                                                <div className="flex flex-col md:flex-row items-stretch gap-6 mb-10">
+                                                    <div className="flex-1 flex items-center gap-6">
+                                                        <div className="w-16 h-16 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.1)] shrink-0">
+                                                            <Utensils size={28} className="text-green-400" />
+                                                        </div>
+                                                        <div>
+                                                            <h2 className="font-pixel text-[12px] text-green-400 mb-1">ALQUIMIA NUTRICIONAL</h2>
+                                                            <p className="font-pixel text-[6px] text-dim uppercase tracking-[2px]">Módulo de Forja Biológica IA</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="bg-[#161b22] px-8 py-4 rounded-3xl border border-white/5 flex flex-col justify-center min-w-[220px]">
+                                                        <div className="flex justify-between items-center mb-1">
+                                                            <span className="font-pixel text-[6px] text-dim uppercase">Cálculo de TDEE</span>
+                                                            <Activity size={10} className="text-green-500 opacity-40" />
+                                                        </div>
+                                                        <div className="flex items-baseline gap-2">
+                                                            <span className="font-pixel text-[14px] text-bright">{(() => {
+                                                                const weight = parseFloat(user.weight) || 70;
+                                                                const height = parseFloat(user.height) || 170;
+                                                                let base = weight * 22 * 1.35;
+                                                                if (user.goals.includes('Emagrecer')) base -= 500;
+                                                                if (user.goals.includes('Ganhar massa')) base += 500;
+                                                                return Math.round(base);
+                                                            })()}</span>
+                                                            <span className="font-pixel text-[6px] text-dim">KCAL / DIA</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Status Grid Compacto */}
+                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                    <div className="premium-card !bg-surface/20 !p-4 border-white/5">
+                                                        <div className="flex items-center gap-3">
+                                                            <Flame size={14} className="text-orange" />
+                                                            <div>
+                                                                <span className="font-pixel text-[5px] text-dim uppercase block">Energia Alvo</span>
+                                                                <p className="font-pixel text-[8px] text-bright">{user.maxEnergy || 2180} KCAL</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="premium-card !bg-surface/20 !p-4 border-white/5">
+                                                        <div className="flex items-center gap-3">
+                                                            <Droplets size={14} className="text-blue" />
+                                                            <div>
+                                                                <span className="font-pixel text-[5px] text-dim uppercase block">Mana Líquida</span>
+                                                                <p className="font-pixel text-[8px] text-bright">{user.maxWater || 2450} ML</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="premium-card !bg-surface/20 !p-4 border-white/5">
+                                                        <div className="flex items-center gap-3">
+                                                            <Target size={14} className="text-hp-red" />
+                                                            <div>
+                                                                <span className="font-pixel text-[5px] text-dim uppercase block">Objetivo</span>
+                                                                <p className="font-pixel text-[8px] text-bright uppercase">{
+                                                                    user.goals.includes('Emagrecer') ? 'Déficit' :
+                                                                        user.goals.includes('Ganhar massa') ? 'Massa' : 'Manter'
+                                                                }</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <button
+                                                        onClick={generateDailyPlan}
+                                                        className="premium-card !bg-green-500/10 hover:!bg-green-500/20 !p-4 border-green-500/20 text-center transition-all group active:scale-95"
+                                                    >
+                                                        <RotateCcw size={14} className="text-green-400 mx-auto mb-1 group-hover:rotate-180 transition-transform duration-500" />
+                                                        <span className="font-pixel text-[6px] text-green-400 uppercase font-bold">Gerar pela IA</span>
+                                                    </button>
+
+                                                    <button
+                                                        onClick={() => setShowNewMealModal(true)}
+                                                        className="premium-card !bg-blue-500/10 hover:!bg-blue-500/20 !p-4 border-blue-500/20 text-center transition-all group active:scale-95"
+                                                    >
+                                                        <Plus size={14} className="text-blue mx-auto mb-1" />
+                                                        <span className="font-pixel text-[6px] text-blue uppercase font-bold">Add Manual</span>
+                                                    </button>
+                                                </div>
+
+                                                {/* Plano de Refeições IA */}
+                                                <div>
+                                                    <h3 className="font-pixel text-[8px] text-bright tracking-widest mb-6 flex items-center gap-2">
+                                                        <ClipboardList size={14} className="text-green-400" /> PLANO DE REFEIÇÕES DIÁRIO
+                                                    </h3>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {(user.dailyMealPlan || []).map((meal, idx) => {
+                                                            const isDone = (user.mealDone || []).includes(idx);
                                                             return (
                                                                 <div
-                                                                    key={q.id}
-                                                                    onClick={() => handleCalendarQuestClick(q.id)}
-                                                                    className={`calendar-quest-item ${priorityClass}`}
+                                                                    key={idx}
+                                                                    onClick={() => toggleMeal(idx)}
+                                                                    className={`premium-card !bg-[#0d1117] border-white/5 !p-6 flex flex-col gap-4 relative group hover:border-green-500/30 transition-all overflow-hidden cursor-pointer ${isDone ? 'opacity-30 grayscale-[0.8]' : ''}`}
                                                                 >
-                                                                    <div className={`w-1 h-1 rounded-full shrink-0 ${isDone ? 'bg-green-400' : 'bg-white/40'}`}></div>
-                                                                    <span className={`calendar-quest-text ${isDone ? 'line-through opacity-50' : ''}`}>
-                                                                        {q.title}
-                                                                    </span>
+                                                                    <div className="flex items-center justify-between z-10">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className={`font-pixel text-[8px] px-3 py-1.5 rounded-lg border transition-colors ${isDone ? 'bg-green-500/5 text-green-500/40 border-green-500/10' : 'bg-green-500/10 text-green-400 border-green-500/10'}`}>
+                                                                                {meal.time}
+                                                                            </div>
+                                                                            <h4 className={`font-pixel text-[9px] uppercase tracking-tighter transition-colors ${isDone ? 'text-dim line-through opacity-70' : 'text-bright group-hover:text-green-400'}`}>{meal.name}</h4>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-3">
+                                                                            <span className={`font-pixel text-[7px] transition-colors ${isDone ? 'text-dim/40 line-through' : 'text-dim'}`}>{meal.cals} KCAL</span>
+                                                                            {isDone && <Check size={12} className="text-green-500" />}
+                                                                        </div>
+                                                                    </div>
+                                                                    <p className={`text-[12px] leading-relaxed font-sans z-10 min-h-[40px] transition-colors ${isDone ? 'text-dim/40 italic line-through' : 'text-dim/80'}`}>
+                                                                        {meal.selectedItem}
+                                                                    </p>
+                                                                    <div className={`absolute top-0 right-0 w-24 h-24 blur-[40px] rounded-full pointer-events-none transition-colors ${isDone ? 'bg-green-500/2' : 'bg-green-500/5 group-hover:bg-green-500/10'}`}></div>
                                                                 </div>
                                                             );
                                                         })}
                                                     </div>
-                                                    {isToday && <div className="absolute bottom-2 right-2 opacity-30"><Zap size={10} className="text-orange" /></div>}
                                                 </div>
-                                            );
-                                        }
-                                        return days;
-                                    })()}
-                                </div>
-                            </div>
-                        </div>
-                    )}
 
-                    {activeTab === 'arena' && (
-                        <div className="animate-slide-up pb-20 max-w-4xl mx-auto">
-                            {/* Oracle Section */}
-                            <div className="master-say mb-12 relative p-8 bg-surface/40 border-violet/50 rounded-[32px]">
-                                <div className="master-badge !bg-violet-dark text-[7px] px-4 py-1.5 uppercase tracking-[2px]">ORÁCULO</div>
-                                <div className="w-16 h-16 rounded-2xl bg-deep border-2 border-violet/30 flex items-center justify-center shadow-[0_0_20px_rgba(110,86,207,0.2)]">
-                                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=oracle&backgroundColor=05070a" className="w-10 h-10" alt="Oracle" />
-                                </div>
-                                <div className="flex-1">
-                                    <p className="font-pixel text-sm text-bright italic leading-relaxed">"O Protocolo Anti-Gravity foi iniciado."</p>
-                                    <p className="font-pixel text-[7px] text-violet mt-3 uppercase tracking-[2px] opacity-70">Sincronizar com o vácuo</p>
-                                </div>
-                            </div>
-
-                            {/* Day Selector */}
-                            <div className="flex justify-center gap-3 mb-12">
-                                {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day, idx) => (
-                                    <button
-                                        key={day}
-                                        onClick={() => setSelectedDay(idx)}
-                                        className={`w-14 h-10 rounded-xl font-pixel text-[8px] transition-all flex items-center justify-center border ${selectedDay === idx ? 'bg-violet border-violet text-white shadow-[0_4px_15px_rgba(110,86,207,0.4)]' : 'bg-surface/50 border-border md:hover:border-violet/50 text-dim'}`}
-                                    >
-                                        {day}
-                                    </button>
-                                ))}
-                            </div>
-
-                            {/* Protocol Area */}
-                            <div className="premium-card p-12 bg-surface/20 border-violet/20 rounded-[40px] text-center mb-8 min-h-[400px] flex flex-col justify-center items-center relative overflow-hidden">
-                                {!isProtocolActive ? (
-                                    <div className="space-y-12 animate-slide-up w-full">
-                                        <h2 className="font-pixel text-sm text-dim tracking-[4px] opacity-50 uppercase">
-                                            FORGE ANTI-GRAVITY: {workoutType === 'superiores' ? 'SUPERIOR' : 'INFERIOR'}
-                                        </h2>
-
-                                        <div className="flex gap-6 justify-center">
-                                            <button
-                                                onClick={() => setWorkoutType('superiores')}
-                                                className={`px-6 py-3 rounded-full font-pixel text-[7px] border transition-all ${workoutType === 'superiores' ? 'bg-violet border-violet text-white' : 'bg-deep border-border text-dim'}`}
-                                            >
-                                                SUPERIOR
-                                            </button>
-                                            <button
-                                                onClick={() => setWorkoutType('inferiores')}
-                                                className={`px-6 py-3 rounded-full font-pixel text-[7px] border transition-all ${workoutType === 'inferiores' ? 'bg-hp-red border-hp-red text-white' : 'bg-deep border-border text-dim'}`}
-                                            >
-                                                INFERIOR
-                                            </button>
-                                        </div>
-
-                                        <button
-                                            onClick={() => setIsProtocolActive(true)}
-                                            className="btn-premium max-w-sm mx-auto !h-16 !rounded-2xl shadow-[0_0_30px_rgba(110,86,207,0.3)] hover:scale-105 transition-transform"
-                                        >
-                                            INVOCAR PROTOCOLO IA
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="w-full animate-slide-up">
-                                        <div className="flex items-center justify-between mb-8">
-                                            <h3 className="font-pixel text-[10px] text-violet uppercase tracking-widest">Protocolo Ativo: {workoutType}</h3>
-                                            <button
-                                                onClick={() => { setIsProtocolActive(false); setWorkoutDone([]); }}
-                                                className="font-pixel text-[7px] text-dim hover:text-hp-red transition-colors"
-                                            >
-                                                [ CANCELAR ]
-                                            </button>
-                                        </div>
-
-                                        <div className="overflow-x-auto">
-                                            <table className="w-full text-left font-pixel">
-                                                <thead>
-                                                    <tr className="border-b border-border/50">
-                                                        <th className="py-4 text-[7px] text-dim uppercase">NOME</th>
-                                                        <th className="py-4 text-[7px] text-dim uppercase text-center">CARGA</th>
-                                                        <th className="py-4 text-[7px] text-dim text-right pr-4 uppercase">CHECK</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {WORKOUTS[workoutType].map(ex => (
-                                                        <tr
-                                                            key={ex.id}
-                                                            onClick={() => toggleExercise(ex.id)}
-                                                            className="border-b border-border/20 hover:bg-violet/5 transition-colors cursor-pointer group"
-                                                        >
-                                                            <td className="py-5">
-                                                                <span className="text-sm font-bold text-bright tracking-wide block">{ex.name}</span>
-                                                            </td>
-                                                            <td className="py-5 text-center">
-                                                                <span className="text-[10px] text-violet bg-violet/10 px-3 py-1.5 rounded-lg border border-violet/20">
-                                                                    {ex.detail}
-                                                                </span>
-                                                            </td>
-                                                            <td className="py-5 text-right pr-4">
-                                                                <div className={`w-6 h-6 border-2 flex items-center justify-center rounded-lg transition-all ml-auto ${workoutDone.includes(ex.id) ? 'bg-violet border-violet shadow-[0_0_10px_rgba(110,86,207,0.5)]' : 'border-border group-hover:border-violet/50'}`}>
-                                                                    {workoutDone.includes(ex.id) && <CheckCircle2 size={12} className="text-white" />}
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-
-                                        <div className="mt-12 space-y-8">
-                                            <div className="w-full bg-deep h-1.5 rounded-full overflow-hidden border border-border/30">
-                                                <div
-                                                    className="h-full bg-violet shadow-[0_0_15px_purple] transition-all duration-700 ease-out"
-                                                    style={{ width: `${(workoutDone.length / WORKOUTS[workoutType].length) * 100}%` }}
-                                                />
+                                                {/* Dica IA */}
+                                                <div className="premium-card !bg-[#161b22] border-green-500/10 p-6 flex items-center gap-6">
+                                                    <div className="w-12 h-12 rounded-xl bg-green-500/5 flex items-center justify-center border border-green-500/10 shrink-0">
+                                                        <Star size={20} className="text-green-400 animate-pulse" />
+                                                    </div>
+                                                    <p className="text-[11px] text-dim italic leading-relaxed">
+                                                        "Lembre-se: O gerador de dietas alterna itens para garantir que seu metabolismo não estagne. Refeições variadas evitam a fadiga mental do sistema."
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <button
-                                                onClick={finishWorkoutQuest}
-                                                className={`btn-premium !h-14 !rounded-xl text-[9px] ${isWorkoutComplete() ? 'animate-pulse' : 'opacity-30 grayscale cursor-not-allowed'}`}
-                                            >
-                                                SINCRONIZAR PROGRESSO
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
+                                        } />
 
-                    {activeTab === 'dieta' && (
-                        <div className="animate-slide-up pb-24 max-w-5xl mx-auto space-y-8">
-                            {/* Header IA Reorganizado */}
-                            <div className="flex flex-col md:flex-row items-stretch gap-6 mb-10">
-                                <div className="flex-1 flex items-center gap-6">
-                                    <div className="w-16 h-16 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.1)] shrink-0">
-                                        <Utensils size={28} className="text-green-400" />
-                                    </div>
-                                    <div>
-                                        <h2 className="font-pixel text-[12px] text-green-400 mb-1">ALQUIMIA NUTRICIONAL</h2>
-                                        <p className="font-pixel text-[6px] text-dim uppercase tracking-[2px]">Módulo de Forja Biológica IA</p>
-                                    </div>
-                                </div>
-
-                                <div className="bg-[#161b22] px-8 py-4 rounded-3xl border border-white/5 flex flex-col justify-center min-w-[220px]">
-                                    <div className="flex justify-between items-center mb-1">
-                                        <span className="font-pixel text-[6px] text-dim uppercase">Cálculo de TDEE</span>
-                                        <Activity size={10} className="text-green-500 opacity-40" />
-                                    </div>
-                                    <div className="flex items-baseline gap-2">
-                                        <span className="font-pixel text-[14px] text-bright">{(() => {
-                                            const weight = parseFloat(user.weight) || 70;
-                                            const height = parseFloat(user.height) || 170;
-                                            let base = weight * 22 * 1.35;
-                                            if (user.goals.includes('Emagrecer')) base -= 500;
-                                            if (user.goals.includes('Ganhar massa')) base += 500;
-                                            return Math.round(base);
-                                        })()}</span>
-                                        <span className="font-pixel text-[6px] text-dim">KCAL / DIA</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Status Grid Compacto */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="premium-card !bg-surface/20 !p-4 border-white/5">
-                                    <div className="flex items-center gap-3">
-                                        <Flame size={14} className="text-orange" />
-                                        <div>
-                                            <span className="font-pixel text-[5px] text-dim uppercase block">Energia Alvo</span>
-                                            <p className="font-pixel text-[8px] text-bright">{user.maxEnergy || 2180} KCAL</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="premium-card !bg-surface/20 !p-4 border-white/5">
-                                    <div className="flex items-center gap-3">
-                                        <Droplets size={14} className="text-blue" />
-                                        <div>
-                                            <span className="font-pixel text-[5px] text-dim uppercase block">Mana Líquida</span>
-                                            <p className="font-pixel text-[8px] text-bright">{user.maxWater || 2450} ML</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="premium-card !bg-surface/20 !p-4 border-white/5">
-                                    <div className="flex items-center gap-3">
-                                        <Target size={14} className="text-hp-red" />
-                                        <div>
-                                            <span className="font-pixel text-[5px] text-dim uppercase block">Objetivo</span>
-                                            <p className="font-pixel text-[8px] text-bright uppercase">{
-                                                user.goals.includes('Emagrecer') ? 'Déficit' :
-                                                    user.goals.includes('Ganhar massa') ? 'Massa' : 'Manter'
-                                            }</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <button
-                                    onClick={generateDailyPlan}
-                                    className="premium-card !bg-green-500/10 hover:!bg-green-500/20 !p-4 border-green-500/20 text-center transition-all group active:scale-95"
-                                >
-                                    <RotateCcw size={14} className="text-green-400 mx-auto mb-1 group-hover:rotate-180 transition-transform duration-500" />
-                                    <span className="font-pixel text-[6px] text-green-400 uppercase font-bold">Gerar pela IA</span>
-                                </button>
-
-                                <button
-                                    onClick={() => setShowNewMealModal(true)}
-                                    className="premium-card !bg-blue-500/10 hover:!bg-blue-500/20 !p-4 border-blue-500/20 text-center transition-all group active:scale-95"
-                                >
-                                    <Plus size={14} className="text-blue mx-auto mb-1" />
-                                    <span className="font-pixel text-[6px] text-blue uppercase font-bold">Add Manual</span>
-                                </button>
-                            </div>
-
-                            {/* Plano de Refeições IA */}
-                            <div>
-                                <h3 className="font-pixel text-[8px] text-bright tracking-widest mb-6 flex items-center gap-2">
-                                    <ClipboardList size={14} className="text-green-400" /> PLANO DE REFEIÇÕES DIÁRIO
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {(user.dailyMealPlan || []).map((meal, idx) => {
-                                        const isDone = (user.mealDone || []).includes(idx);
-                                        return (
-                                            <div
-                                                key={idx}
-                                                onClick={() => toggleMeal(idx)}
-                                                className={`premium-card !bg-[#0d1117] border-white/5 !p-6 flex flex-col gap-4 relative group hover:border-green-500/30 transition-all overflow-hidden cursor-pointer ${isDone ? 'opacity-30 grayscale-[0.8]' : ''}`}
-                                            >
-                                                <div className="flex items-center justify-between z-10">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={`font-pixel text-[8px] px-3 py-1.5 rounded-lg border transition-colors ${isDone ? 'bg-green-500/5 text-green-500/40 border-green-500/10' : 'bg-green-500/10 text-green-400 border-green-500/10'}`}>
-                                                            {meal.time}
+                                        <Route path="/Configuracoes" element={
+                                            <div className="animate-slide-up max-w-2xl mx-auto space-y-8 pb-32">
+                                                {/* Perfil Header Card */}
+                                                <div className="premium-card !p-8 bg-surface/30 border-white/5 relative overflow-hidden rounded-[32px]">
+                                                    <div className="absolute top-0 right-0 w-64 h-64 bg-violet/5 blur-[100px] -mr-32 -mt-32"></div>
+                                                    <div className="flex flex-col items-center text-center relative z-10">
+                                                        <div className="w-24 h-24 rounded-3xl border-2 border-violet/30 p-1 mb-6 shadow-[0_0_30px_rgba(110,86,207,0.2)]">
+                                                            <div className="w-full h-full rounded-2xl overflow-hidden bg-deep">
+                                                                <img src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.name}`} alt="Avatar" className="w-full h-full object-cover" />
+                                                            </div>
                                                         </div>
-                                                        <h4 className={`font-pixel text-[9px] uppercase tracking-tighter transition-colors ${isDone ? 'text-dim line-through opacity-70' : 'text-bright group-hover:text-green-400'}`}>{meal.name}</h4>
+                                                        <h2 className="font-pixel text-xl text-bright mb-2">{user.name}</h2>
+                                                        <div className="flex items-center gap-2 mb-8">
+                                                            <span className="font-pixel text-[8px] text-violet uppercase tracking-[3px]">{user.title}</span>
+                                                            <span className="text-dim">•</span>
+                                                            <span className="font-pixel text-[8px] text-orange uppercase tracking-[3px]">{user.characterClass}</span>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 gap-4 w-full">
+                                                            <div className="bg-deep/50 p-6 rounded-2xl border border-white/5">
+                                                                <span className="font-pixel text-[6px] text-dim uppercase block mb-2 opacity-50">Nível Atual</span>
+                                                                <span className="font-pixel text-xl text-bright">{user.level}</span>
+                                                            </div>
+                                                            <div className="bg-deep/50 p-6 rounded-2xl border border-white/5">
+                                                                <span className="font-pixel text-[6px] text-dim uppercase block mb-2 opacity-50">Ouro Acumulado</span>
+                                                                <span className="font-pixel text-xl text-orange">{user.gold}G</span>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex items-center gap-3">
-                                                        <span className={`font-pixel text-[7px] transition-colors ${isDone ? 'text-dim/40 line-through' : 'text-dim'}`}>{meal.cals} KCAL</span>
-                                                        {isDone && <Check size={12} className="text-green-500" />}
+                                                </div>
+
+                                                {/* Stats & Goals Grid */}
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    <div className="premium-card !p-8 bg-surface/20 border-white/5 rounded-[24px]">
+                                                        <h3 className="font-pixel text-[8px] text-bright mb-8 flex items-center gap-3">
+                                                            <Activity size={16} className="text-violet" />
+                                                            <span>ATRIBUTOS FÍSICOS</span>
+                                                        </h3>
+                                                        <div className="space-y-4">
+                                                            <div className="flex justify-between items-center bg-deep/40 p-4 rounded-xl border border-white/5">
+                                                                <span className="font-pixel text-[7px] text-dim uppercase">Peso corporal</span>
+                                                                <span className="font-pixel text-[10px] text-bright">{user.weight || '--'} KG</span>
+                                                            </div>
+                                                            <div className="flex justify-between items-center bg-deep/40 p-4 rounded-xl border border-white/5">
+                                                                <span className="font-pixel text-[7px] text-dim uppercase">Estatura</span>
+                                                                <span className="font-pixel text-[10px] text-bright">{user.height || '--'} CM</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="premium-card !p-8 bg-surface/20 border-white/5 rounded-[24px]">
+                                                        <h3 className="font-pixel text-[8px] text-bright mb-8 flex items-center gap-3">
+                                                            <Target size={16} className="text-hp-red" />
+                                                            <span>OBJETIVOS ATIVOS</span>
+                                                        </h3>
+                                                        <div className="flex flex-wrap gap-3">
+                                                            {user.goals.length > 0 ? user.goals.map((goal, i) => (
+                                                                <span key={i} className="px-4 py-2 rounded-xl bg-hp-red/10 border border-hp-red/20 text-hp-red font-pixel text-[8px] uppercase tracking-wider">
+                                                                    {goal}
+                                                                </span>
+                                                            )) : (
+                                                                <p className="font-pixel text-[7px] text-dim italic">Sem objetivos definidos</p>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <p className={`text-[12px] leading-relaxed font-sans z-10 min-h-[40px] transition-colors ${isDone ? 'text-dim/40 italic line-through' : 'text-dim/80'}`}>
-                                                    {meal.selectedItem}
-                                                </p>
-                                                <div className={`absolute top-0 right-0 w-24 h-24 blur-[40px] rounded-full pointer-events-none transition-colors ${isDone ? 'bg-green-500/2' : 'bg-green-500/5 group-hover:bg-green-500/10'}`}></div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
 
-                            {/* Dica IA */}
-                            <div className="premium-card !bg-[#161b22] border-green-500/10 p-6 flex items-center gap-6">
-                                <div className="w-12 h-12 rounded-xl bg-green-500/5 flex items-center justify-center border border-green-500/10 shrink-0">
-                                    <Star size={20} className="text-green-400 animate-pulse" />
-                                </div>
-                                <p className="text-[11px] text-dim italic leading-relaxed">
-                                    "Lembre-se: O gerador de dietas alterna itens para garantir que seu metabolismo não estagne. Refeições variadas evitam a fadiga mental do sistema."
-                                </p>
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'perfil' && (
-                        <div className="animate-slide-up max-w-2xl mx-auto space-y-8 pb-32">
-                            {/* Perfil Header Card */}
-                            <div className="premium-card !p-8 bg-surface/30 border-white/5 relative overflow-hidden rounded-[32px]">
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-violet/5 blur-[100px] -mr-32 -mt-32"></div>
-                                <div className="flex flex-col items-center text-center relative z-10">
-                                    <div className="w-24 h-24 rounded-3xl border-2 border-violet/30 p-1 mb-6 shadow-[0_0_30px_rgba(110,86,207,0.2)]">
-                                        <div className="w-full h-full rounded-2xl overflow-hidden bg-deep">
-                                            <img src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.name}`} alt="Avatar" className="w-full h-full object-cover" />
-                                        </div>
-                                    </div>
-                                    <h2 className="font-pixel text-xl text-bright mb-2">{user.name}</h2>
-                                    <div className="flex items-center gap-2 mb-8">
-                                        <span className="font-pixel text-[8px] text-violet uppercase tracking-[3px]">{user.title}</span>
-                                        <span className="text-dim">•</span>
-                                        <span className="font-pixel text-[8px] text-orange uppercase tracking-[3px]">{user.characterClass}</span>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4 w-full">
-                                        <div className="bg-deep/50 p-6 rounded-2xl border border-white/5">
-                                            <span className="font-pixel text-[6px] text-dim uppercase block mb-2 opacity-50">Nível Atual</span>
-                                            <span className="font-pixel text-xl text-bright">{user.level}</span>
-                                        </div>
-                                        <div className="bg-deep/50 p-6 rounded-2xl border border-white/5">
-                                            <span className="font-pixel text-[6px] text-dim uppercase block mb-2 opacity-50">Ouro Acumulado</span>
-                                            <span className="font-pixel text-xl text-orange">{user.gold}G</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Stats & Goals Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="premium-card !p-8 bg-surface/20 border-white/5 rounded-[24px]">
-                                    <h3 className="font-pixel text-[8px] text-bright mb-8 flex items-center gap-3">
-                                        <Activity size={16} className="text-violet" />
-                                        <span>ATRIBUTOS FÍSICOS</span>
-                                    </h3>
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between items-center bg-deep/40 p-4 rounded-xl border border-white/5">
-                                            <span className="font-pixel text-[7px] text-dim uppercase">Peso corporal</span>
-                                            <span className="font-pixel text-[10px] text-bright">{user.weight || '--'} KG</span>
-                                        </div>
-                                        <div className="flex justify-between items-center bg-deep/40 p-4 rounded-xl border border-white/5">
-                                            <span className="font-pixel text-[7px] text-dim uppercase">Estatura</span>
-                                            <span className="font-pixel text-[10px] text-bright">{user.height || '--'} CM</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="premium-card !p-8 bg-surface/20 border-white/5 rounded-[24px]">
-                                    <h3 className="font-pixel text-[8px] text-bright mb-8 flex items-center gap-3">
-                                        <Target size={16} className="text-hp-red" />
-                                        <span>OBJETIVOS ATIVOS</span>
-                                    </h3>
-                                    <div className="flex flex-wrap gap-3">
-                                        {user.goals.length > 0 ? user.goals.map((goal, i) => (
-                                            <span key={i} className="px-4 py-2 rounded-xl bg-hp-red/10 border border-hp-red/20 text-hp-red font-pixel text-[8px] uppercase tracking-wider">
-                                                {goal}
-                                            </span>
-                                        )) : (
-                                            <p className="font-pixel text-[7px] text-dim italic">Sem objetivos definidos</p>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Danger Zone Actions */}
-                            <div className="pt-8 space-y-4">
-                                <h3 className="font-pixel text-[7px] text-dim uppercase tracking-[3px] px-2">Zona de Gerenciamento</h3>
-                                <div className="grid grid-cols-1 gap-3">
-                                    <button
-                                        onClick={() => supabase.auth.signOut()}
-                                        className="w-full h-16 rounded-2xl bg-surface/40 hover:bg-surface/60 border border-white/5 transition-all flex items-center justify-center gap-4 group"
-                                    >
-                                        <LogOut size={18} className="text-dim group-hover:text-orange transition-colors" />
-                                        <span className="font-pixel text-[9px] text-bright uppercase tracking-widest">Sair da Conta</span>
-                                    </button>
-
-                                    <button
-                                        onClick={() => setProfileToDelete(user.id)}
-                                        className="w-full h-16 rounded-2xl bg-hp-red/5 hover:bg-hp-red/10 border border-hp-red/10 hover:border-hp-red/30 transition-all flex items-center justify-center gap-4 group"
-                                    >
-                                        <Skull size={18} className="text-hp-red opacity-50 group-hover:opacity-100 transition-opacity" />
-                                        <span className="font-pixel text-[9px] text-hp-red uppercase tracking-widest">Excluir Personagem</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-
-                    {/* Fail Modal */}
-                    {
-                        showFailModal && (
-                            <div className="modal-overlay">
-                                <div className="fail-modal">
-                                    <div className="flex justify-center gap-4 text-4xl mb-6">
-                                        <span>🧙‍♂️</span>
-                                        <span className="text-hp-red animate-pulse">💢</span>
-                                    </div>
-
-                                    <h2 className="fail-title">
-                                        O MESTRE TE ENCARA COM DESPREZO!
-                                    </h2>
-
-                                    <p className="fail-quote">
-                                        "Achei que era um Maromba, mas tá mais pra um NPC de fundo de cenário. Acorda pra vida!"
-                                    </p>
-
-                                    <p className="fail-positive">
-                                        "AMANHÃ VOCÊ TEM UMA NOVA CHANCE DE NÃO SER UMA VERGONHA PARA ESTA GUILDA!"
-                                    </p>
-
-                                    <button
-                                        onClick={() => setShowFailModal(false)}
-                                        className="btn-humiliation"
-                                    >
-                                        ACEITAR A HUMILHAÇÃO E VOLTAR
-                                    </button>
-                                </div>
-                            </div>
-                        )
-                    }
-                    {/* New Quest Modal */}
-                    {
-                        showNewQuestModal && (
-                            <div className="modal-overlay">
-                                <div className="premium-card modal-card max-w-lg animate-slide-up !bg-[#0d1117] !p-8 !border-blue/30 shadow-[0_0_50px_rgba(0,145,255,0.15)]">
-                                    <div className="flex items-center justify-between mb-8">
-                                        <h2 className="font-pixel text-[10px] flex items-center gap-3 text-blue">
-                                            <Plus size={20} /> FORJAR NOVA QUEST
-                                        </h2>
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowNewQuestModal(false)}
-                                            className="text-dim hover:text-white transition-colors p-2"
-                                        >
-                                            <X size={20} />
-                                        </button>
-                                    </div>
-                                    <form onSubmit={addNewQuest} className="space-y-6">
-                                        <div className="space-y-4">
-                                            <input
-                                                type="text"
-                                                placeholder="Título da tarefa..."
-                                                className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-blue/50 outline-none transition-all font-sans"
-                                                value={newQuestData.title}
-                                                onChange={e => setNewQuestData(prev => ({ ...prev, title: e.target.value }))}
-                                                required
-                                            />
-
-                                            <textarea
-                                                placeholder="Descrição (opcional)"
-                                                className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-blue/50 outline-none transition-all font-sans min-h-[80px] resize-none"
-                                                value={newQuestData.desc}
-                                                onChange={e => setNewQuestData(prev => ({ ...prev, desc: e.target.value }))}
-                                            />
-
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <label className="font-pixel text-[6px] text-dim uppercase">Data Limite de Entrega</label>
-                                                    <input
-                                                        type="date"
-                                                        className="w-full bg-[#161b22] border-transparent p-3 rounded-xl text-[10px] outline-none font-sans"
-                                                        value={newQuestData.targetDate}
-                                                        onChange={e => setNewQuestData(prev => ({ ...prev, targetDate: e.target.value }))}
-                                                    />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <label className="font-pixel text-[6px] text-dim uppercase">Duração (Min)</label>
-                                                    <input
-                                                        type="number"
-                                                        placeholder="30"
-                                                        className="w-full bg-[#161b22] border-transparent p-3 rounded-xl text-sm outline-none font-sans"
-                                                        value={newQuestData.time}
-                                                        onChange={e => setNewQuestData(prev => ({ ...prev, time: e.target.value }))}
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center justify-between bg-[#161b22] p-4 rounded-xl">
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-sans font-medium">RECORRENTE</span>
-                                                    <span className="text-[8px] font-pixel text-dim">HABITO DIÁRIO</span>
-                                                </div>
-                                                <label className="switch relative inline-block w-10 h-6">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={newQuestData.isRecurring}
-                                                        onChange={e => setNewQuestData(prev => ({ ...prev, isRecurring: e.target.checked }))}
-                                                        className="opacity-0 w-0 h-0"
-                                                    />
-                                                    <span className={`slider round absolute cursor-pointer inset-0 bg-[#0d1117] border border-white/10 transition-all rounded-full before:absolute before:content-[''] before:h-4 before:w-4 before:left-1 before:bottom-0.8 before:bg-blue before:transition-all before:rounded-full ${newQuestData.isRecurring ? 'before:translate-x-4 before:!bg-orange !border-orange/30' : ''}`}></span>
-                                                </label>
-                                            </div>
-
-                                            <div className="space-y-4 pt-2">
-                                                <label className="font-pixel text-[6px] text-dim uppercase">Prioridade da Quest</label>
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    {[
-                                                        { id: 'Alta', label: 'ALTA', color: 'text-hp-red', border: 'border-hp-red/50' },
-                                                        { id: 'Média', label: 'MÉDIA', color: 'text-orange', border: 'border-orange/50' },
-                                                        { id: 'Normal', label: 'NORMAL', color: 'text-blue', border: 'border-blue/50' },
-                                                        { id: 'Sem prioridade', label: 'SEM PRIORIDADE', color: 'text-dim', border: 'border-white/10' }
-                                                    ].map(p => (
+                                                {/* Danger Zone Actions */}
+                                                <div className="pt-8 space-y-4">
+                                                    <h3 className="font-pixel text-[7px] text-dim uppercase tracking-[3px] px-2">Zona de Gerenciamento</h3>
+                                                    <div className="grid grid-cols-1 gap-3">
                                                         <button
-                                                            key={p.id}
-                                                            type="button"
-                                                            onClick={() => setNewQuestData(prev => ({ ...prev, priority: p.id }))}
-                                                            className={`px-4 py-3 rounded-xl font-pixel text-[7px] border flex items-center justify-center gap-2 transition-all ${newQuestData.priority === p.id ? `bg-surface ${p.border} ${p.color} shadow-[0_0_15px_rgba(255,255,255,0.05)]` : 'bg-[#161b22] border-transparent text-dim hover:border-white/10'}`}
+                                                            onClick={() => supabase.auth.signOut()}
+                                                            className="w-full h-16 rounded-2xl bg-surface/40 hover:bg-surface/60 border border-white/5 transition-all flex items-center justify-center gap-4 group"
                                                         >
-                                                            <Flag size={10} fill={newQuestData.priority === p.id ? 'currentColor' : 'none'} />
-                                                            {p.label}
+                                                            <LogOut size={18} className="text-dim group-hover:text-orange transition-colors" />
+                                                            <span className="font-pixel text-[9px] text-bright uppercase tracking-widest">Sair da Conta</span>
                                                         </button>
-                                                    ))}
-                                                </div>
-                                            </div>
 
-                                            <div className="space-y-4">
-                                                <div className="flex justify-between items-center">
-                                                    <label className="font-pixel text-[7px] text-dim uppercase">Peso / Esforço</label>
-                                                    <span className="font-pixel text-orange text-sm">{newQuestData.difficulty}</span>
-                                                </div>
-                                                <input
-                                                    type="range"
-                                                    min="1"
-                                                    max="10"
-                                                    className="w-full accent-orange"
-                                                    value={newQuestData.difficulty}
-                                                    onChange={e => setNewQuestData(prev => ({ ...prev, difficulty: e.target.value }))}
-                                                />
-                                                <div className="flex justify-between font-pixel text-[5px] text-dim">
-                                                    <span>FÁCIL</span>
-                                                    <span>DIFÍCIL</span>
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-4 pt-2">
-                                                <label className="font-pixel text-[6px] text-dim uppercase">Categoria da Missão</label>
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    {[
-                                                        { id: 'HÁBITOS', label: 'HÁBITOS', color: 'text-violet', border: 'border-violet/50' },
-                                                        { id: 'TAREFAS', label: 'TAREFAS', color: 'text-blue', border: 'border-blue/50' },
-                                                        { id: 'HIGIENE', label: 'HIGIENE', color: 'text-green-400', border: 'border-green-400/50' },
-                                                        { id: 'DIETA', label: 'DIETA', color: 'text-orange', border: 'border-orange/50' }
-                                                    ].map(cat => (
                                                         <button
-                                                            key={cat.id}
-                                                            type="button"
-                                                            onClick={() => setNewQuestData(prev => ({
-                                                                ...prev,
-                                                                category: cat.id,
-                                                                isRecurring: cat.id !== 'TAREFAS'
-                                                            }))}
-                                                            className={`px-4 py-3 rounded-xl font-pixel text-[7px] border flex items-center justify-center gap-2 transition-all ${newQuestData.category === cat.id ? `bg-surface/80 ${cat.border} ${cat.color} shadow-[0_0_15px_rgba(255,255,255,0.05)]` : 'bg-[#161b22] border-transparent text-dim hover:border-white/10'}`}
+                                                            onClick={() => setProfileToDelete(user.id)}
+                                                            className="w-full h-16 rounded-2xl bg-hp-red/5 hover:bg-hp-red/10 border border-hp-red/10 hover:border-hp-red/30 transition-all flex items-center justify-center gap-4 group"
                                                         >
-                                                            {cat.label}
+                                                            <Skull size={18} className="text-hp-red opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                            <span className="font-pixel text-[9px] text-hp-red uppercase tracking-widest">Excluir Personagem</span>
                                                         </button>
-                                                    ))}
+                                                    </div>
                                                 </div>
+                                            </div>
+                                        } />
+                                    </Routes>
+
+                                    {/* Fail Modal */}
+                                    {
+                                        showFailModal && (
+                                            <div className="modal-overlay">
+                                                <div className="fail-modal">
+                                                    <div className="flex justify-center gap-4 text-4xl mb-6">
+                                                        <span>🧙‍♂️</span>
+                                                        <span className="text-hp-red animate-pulse">💢</span>
+                                                    </div>
+
+                                                    <h2 className="fail-title">
+                                                        O MESTRE TE ENCARA COM DESPREZO!
+                                                    </h2>
+
+                                                    <p className="fail-quote">
+                                                        "Achei que era um Maromba, mas tá mais pra um NPC de fundo de cenário. Acorda pra vida!"
+                                                    </p>
+
+                                                    <p className="fail-positive">
+                                                        "AMANHÃ VOCÊ TEM UMA NOVA CHANCE DE NÃO SER UMA VERGONHA PARA ESTA GUILDA!"
+                                                    </p>
+
+                                                    <button
+                                                        onClick={() => setShowFailModal(false)}
+                                                        className="btn-humiliation"
+                                                    >
+                                                        ACEITAR A HUMILHAÇÃO E VOLTAR
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )
+                                    }
+                                    {/* New Quest Modal */}
+                                    {
+                                        showNewQuestModal && (
+                                            <div className="modal-overlay">
+                                                <div className="premium-card modal-card max-w-lg animate-slide-up !bg-[#0d1117] !p-8 !border-blue/30 shadow-[0_0_50px_rgba(0,145,255,0.15)]">
+                                                    <div className="flex items-center justify-between mb-8">
+                                                        <h2 className="font-pixel text-[10px] flex items-center gap-3 text-blue">
+                                                            <Plus size={20} /> FORJAR NOVA QUEST
+                                                        </h2>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setShowNewQuestModal(false)}
+                                                            className="text-dim hover:text-white transition-colors p-2"
+                                                        >
+                                                            <X size={20} />
+                                                        </button>
+                                                    </div>
+                                                    <form onSubmit={addNewQuest} className="space-y-6">
+                                                        <div className="space-y-4">
+                                                            <input
+                                                                type="text"
+                                                                placeholder="Título da tarefa..."
+                                                                className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-blue/50 outline-none transition-all font-sans"
+                                                                value={newQuestData.title}
+                                                                onChange={e => setNewQuestData(prev => ({ ...prev, title: e.target.value }))}
+                                                                required
+                                                            />
+
+                                                            <textarea
+                                                                placeholder="Descrição (opcional)"
+                                                                className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-blue/50 outline-none transition-all font-sans min-h-[80px] resize-none"
+                                                                value={newQuestData.desc}
+                                                                onChange={e => setNewQuestData(prev => ({ ...prev, desc: e.target.value }))}
+                                                            />
+
+                                                            <div className="grid grid-cols-2 gap-4">
+                                                                <div className="space-y-2">
+                                                                    <label className="font-pixel text-[6px] text-dim uppercase">Data Limite de Entrega</label>
+                                                                    <input
+                                                                        type="date"
+                                                                        className="w-full bg-[#161b22] border-transparent p-3 rounded-xl text-[10px] outline-none font-sans"
+                                                                        value={newQuestData.targetDate}
+                                                                        onChange={e => setNewQuestData(prev => ({ ...prev, targetDate: e.target.value }))}
+                                                                    />
+                                                                </div>
+                                                                <div className="space-y-2">
+                                                                    <label className="font-pixel text-[6px] text-dim uppercase">Duração (Min)</label>
+                                                                    <input
+                                                                        type="number"
+                                                                        placeholder="30"
+                                                                        className="w-full bg-[#161b22] border-transparent p-3 rounded-xl text-sm outline-none font-sans"
+                                                                        value={newQuestData.time}
+                                                                        onChange={e => setNewQuestData(prev => ({ ...prev, time: e.target.value }))}
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="flex items-center justify-between bg-[#161b22] p-4 rounded-xl">
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-sm font-sans font-medium">RECORRENTE</span>
+                                                                    <span className="text-[8px] font-pixel text-dim">HABITO DIÁRIO</span>
+                                                                </div>
+                                                                <label className="switch relative inline-block w-10 h-6">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={newQuestData.isRecurring}
+                                                                        onChange={e => setNewQuestData(prev => ({ ...prev, isRecurring: e.target.checked }))}
+                                                                        className="opacity-0 w-0 h-0"
+                                                                    />
+                                                                    <span className={`slider round absolute cursor-pointer inset-0 bg-[#0d1117] border border-white/10 transition-all rounded-full before:absolute before:content-[''] before:h-4 before:w-4 before:left-1 before:bottom-0.8 before:bg-blue before:transition-all before:rounded-full ${newQuestData.isRecurring ? 'before:translate-x-4 before:!bg-orange !border-orange/30' : ''}`}></span>
+                                                                </label>
+                                                            </div>
+
+                                                            <div className="space-y-4 pt-2">
+                                                                <label className="font-pixel text-[6px] text-dim uppercase">Prioridade da Quest</label>
+                                                                <div className="grid grid-cols-2 gap-2">
+                                                                    {[
+                                                                        { id: 'Alta', label: 'ALTA', color: 'text-hp-red', border: 'border-hp-red/50' },
+                                                                        { id: 'Média', label: 'MÉDIA', color: 'text-orange', border: 'border-orange/50' },
+                                                                        { id: 'Normal', label: 'NORMAL', color: 'text-blue', border: 'border-blue/50' },
+                                                                        { id: 'Sem prioridade', label: 'SEM PRIORIDADE', color: 'text-dim', border: 'border-white/10' }
+                                                                    ].map(p => (
+                                                                        <button
+                                                                            key={p.id}
+                                                                            type="button"
+                                                                            onClick={() => setNewQuestData(prev => ({ ...prev, priority: p.id }))}
+                                                                            className={`px-4 py-3 rounded-xl font-pixel text-[7px] border flex items-center justify-center gap-2 transition-all ${newQuestData.priority === p.id ? `bg-surface ${p.border} ${p.color} shadow-[0_0_15px_rgba(255,255,255,0.05)]` : 'bg-[#161b22] border-transparent text-dim hover:border-white/10'}`}
+                                                                        >
+                                                                            <Flag size={10} fill={newQuestData.priority === p.id ? 'currentColor' : 'none'} />
+                                                                            {p.label}
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="space-y-4">
+                                                                <div className="flex justify-between items-center">
+                                                                    <label className="font-pixel text-[7px] text-dim uppercase">Peso / Esforço</label>
+                                                                    <span className="font-pixel text-orange text-sm">{newQuestData.difficulty}</span>
+                                                                </div>
+                                                                <input
+                                                                    type="range"
+                                                                    min="1"
+                                                                    max="10"
+                                                                    className="w-full accent-orange"
+                                                                    value={newQuestData.difficulty}
+                                                                    onChange={e => setNewQuestData(prev => ({ ...prev, difficulty: e.target.value }))}
+                                                                />
+                                                                <div className="flex justify-between font-pixel text-[5px] text-dim">
+                                                                    <span>FÁCIL</span>
+                                                                    <span>DIFÍCIL</span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="space-y-4 pt-2">
+                                                                <label className="font-pixel text-[6px] text-dim uppercase">Categoria da Missão</label>
+                                                                <div className="grid grid-cols-2 gap-2">
+                                                                    {[
+                                                                        { id: 'HÁBITOS', label: 'HÁBITOS', color: 'text-violet', border: 'border-violet/50' },
+                                                                        { id: 'TAREFAS', label: 'TAREFAS', color: 'text-blue', border: 'border-blue/50' },
+                                                                        { id: 'HIGIENE', label: 'HIGIENE', color: 'text-green-400', border: 'border-green-400/50' },
+                                                                        { id: 'DIETA', label: 'DIETA', color: 'text-orange', border: 'border-orange/50' }
+                                                                    ].map(cat => (
+                                                                        <button
+                                                                            key={cat.id}
+                                                                            type="button"
+                                                                            onClick={() => setNewQuestData(prev => ({
+                                                                                ...prev,
+                                                                                category: cat.id,
+                                                                                isRecurring: cat.id !== 'TAREFAS'
+                                                                            }))}
+                                                                            className={`px-4 py-3 rounded-xl font-pixel text-[7px] border flex items-center justify-center gap-2 transition-all ${newQuestData.category === cat.id ? `bg-surface/80 ${cat.border} ${cat.color} shadow-[0_0_15px_rgba(255,255,255,0.05)]` : 'bg-[#161b22] border-transparent text-dim hover:border-white/10'}`}
+                                                                        >
+                                                                            {cat.label}
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex gap-3 pt-4">
+                                                            <button
+                                                                type="submit"
+                                                                className="btn-primary flex-[2]"
+                                                            >
+                                                                ADICIONAR MISSAO
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setShowNewQuestModal(false)}
+                                                                className="btn-action flex-1"
+                                                            >
+                                                                CANCELAR
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        )
+                                    }
+
+                                    {/* Modal de Nova Refeição */}
+                                    {
+                                        showNewMealModal && (
+                                            <div className="modal-overlay">
+                                                <div className="premium-card modal-card max-w-lg animate-slide-up">
+                                                    <div className="flex items-center justify-between mb-8">
+                                                        <h2 className="font-pixel text-[10px] flex items-center gap-3 text-green-400">
+                                                            <Utensils size={20} /> FORJAR ALIMENTO
+                                                        </h2>
+                                                        <button onClick={() => setShowNewMealModal(false)} className="text-dim hover:text-white transition-colors p-2">
+                                                            <X size={20} />
+                                                        </button>
+                                                    </div>
+                                                    <form onSubmit={addManualMeal} className="space-y-6">
+                                                        <div className="space-y-4">
+                                                            <div>
+                                                                <label className="font-pixel text-[6px] text-dim uppercase mb-2 block">Título do Alimento</label>
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder="Ex: Almoço de Guerreiro"
+                                                                    className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-green-500/50 outline-none transition-all font-sans"
+                                                                    value={newMealData.title}
+                                                                    onChange={e => setNewMealData(prev => ({ ...prev, title: e.target.value }))}
+                                                                    required
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <label className="font-pixel text-[6px] text-dim uppercase mb-2 block">Descritivo (Ingredientes)</label>
+                                                                <textarea
+                                                                    placeholder="Ex: 200g de frango + 100g de arroz integral"
+                                                                    className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-green-500/50 outline-none transition-all font-sans min-h-[100px] resize-none"
+                                                                    value={newMealData.desc}
+                                                                    onChange={e => setNewMealData(prev => ({ ...prev, desc: e.target.value }))}
+                                                                    required
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <label className="font-pixel text-[6px] text-dim uppercase mb-2 block">Horário</label>
+                                                                <input
+                                                                    type="time"
+                                                                    className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-green-500/50 outline-none transition-all font-sans"
+                                                                    value={newMealData.time}
+                                                                    onChange={e => setNewMealData(prev => ({ ...prev, time: e.target.value }))}
+                                                                    required
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="bg-green-500/5 p-4 rounded-xl border border-green-500/20 flex gap-4 items-center">
+                                                            <span className="text-xl">🤖</span>
+                                                            <p className="text-[9px] text-dim italic">A IA calculará automaticamente as calorias baseando-se nos seus ingredientes após salvar.</p>
+                                                        </div>
+                                                        <button type="submit" className="btn-primary w-full py-4">
+                                                            FORJAR ALIMENTO
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        )
+                                    }
+                                    {/* Redundant profileToDelete modal removed from here to fix JSX structure and address redundancy */}
+                                </div>
+
+                                {/* Footer Global */}
+                                <footer className="mt-20 py-12 border-t border-white/5 bg-surface/10">
+                                    <div className="container mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-8">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-orange/20 flex items-center justify-center border border-orange/40">
+                                                <Flame size={20} className="text-orange" />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-pixel text-sm text-bright tracking-widest leading-none mb-1">TaskLine</h3>
+                                                <p className="font-pixel text-[7px] text-dim uppercase tracking-wider">Meça seu esforço diário</p>
                                             </div>
                                         </div>
 
-                                        <div className="flex gap-3 pt-4">
-                                            <button
-                                                type="submit"
-                                                className="btn-primary flex-[2]"
-                                            >
-                                                ADICIONAR MISSAO
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowNewQuestModal(false)}
-                                                className="btn-action flex-1"
-                                            >
-                                                CANCELAR
-                                            </button>
+                                        <div className="text-center font-pixel text-[8px] text-dim uppercase tracking-[3px]">
+                                            @ 2026 TASK LINE. TODOS OS DIREITOS RESERVADOS.
                                         </div>
-                                    </form>
-                                </div>
-                            </div>
-                        )
-                    }
 
-                    {/* Modal de Nova Refeição */}
-                    {
-                        showNewMealModal && (
-                            <div className="modal-overlay">
-                                <div className="premium-card modal-card max-w-lg animate-slide-up">
-                                    <div className="flex items-center justify-between mb-8">
-                                        <h2 className="font-pixel text-[10px] flex items-center gap-3 text-green-400">
-                                            <Utensils size={20} /> FORJAR ALIMENTO
-                                        </h2>
-                                        <button onClick={() => setShowNewMealModal(false)} className="text-dim hover:text-white transition-colors p-2">
-                                            <X size={20} />
+                                        <button className="flex items-center gap-3 px-6 py-3 bg-surface/50 hover:bg-surface border border-white/5 rounded-2xl transition-all group">
+                                            <MessageSquare size={16} className="text-dim group-hover:text-bright" />
+                                            <span className="font-pixel text-[8px] text-dim group-hover:text-bright uppercase tracking-widest pt-0.5">Fale conosco</span>
                                         </button>
                                     </div>
-                                    <form onSubmit={addManualMeal} className="space-y-6">
-                                        <div className="space-y-4">
-                                            <div>
-                                                <label className="font-pixel text-[6px] text-dim uppercase mb-2 block">Título do Alimento</label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Ex: Almoço de Guerreiro"
-                                                    className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-green-500/50 outline-none transition-all font-sans"
-                                                    value={newMealData.title}
-                                                    onChange={e => setNewMealData(prev => ({ ...prev, title: e.target.value }))}
-                                                    required
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="font-pixel text-[6px] text-dim uppercase mb-2 block">Descritivo (Ingredientes)</label>
-                                                <textarea
-                                                    placeholder="Ex: 200g de frango + 100g de arroz integral"
-                                                    className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-green-500/50 outline-none transition-all font-sans min-h-[100px] resize-none"
-                                                    value={newMealData.desc}
-                                                    onChange={e => setNewMealData(prev => ({ ...prev, desc: e.target.value }))}
-                                                    required
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="font-pixel text-[6px] text-dim uppercase mb-2 block">Horário</label>
-                                                <input
-                                                    type="time"
-                                                    className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-green-500/50 outline-none transition-all font-sans"
-                                                    value={newMealData.time}
-                                                    onChange={e => setNewMealData(prev => ({ ...prev, time: e.target.value }))}
-                                                    required
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="bg-green-500/5 p-4 rounded-xl border border-green-500/20 flex gap-4 items-center">
-                                            <span className="text-xl">🤖</span>
-                                            <p className="text-[9px] text-dim italic">A IA calculará automaticamente as calorias baseando-se nos seus ingredientes após salvar.</p>
-                                        </div>
-                                        <button type="submit" className="btn-primary w-full py-4">
-                                            FORJAR ALIMENTO
-                                        </button>
-                                    </form>
-                                </div>
+                                </footer>
                             </div>
-                        )
-                    }
-                    {/* Redundant profileToDelete modal removed from here to fix JSX structure and address redundancy */}
-                </div>
-            </div>
+                        </>
+                    )
+                } />
+            </Routes>
         </div>
     );
 }
