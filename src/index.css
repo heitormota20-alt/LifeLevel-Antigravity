@@ -1821,32 +1821,34 @@ input[type="range"]::-moz-range-thumb {
 .summary-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: 20px;
 }
 
 .summary-card {
-    background: #0d1117;
+    background: #11141d;
     border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
-    padding: 20px;
+    border-radius: 24px;
+    padding: 28px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    transition: all 0.3s ease;
+    gap: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .summary-card:hover {
     border-color: rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.02);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
 }
 
-.summary-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+.summary-icon-wrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-bottom: 8px;
 }
 
 .hoje-task-item {
@@ -2015,4 +2017,21 @@ input[type="range"]::-moz-range-thumb {
 
 .hover\:border-orange\/30:hover {
     border-color: rgba(245, 166, 35, 0.3);
+}
+
+/* Status & Utility Colors */
+.text-green-500 {
+    color: #2ed573 !important;
+}
+
+.bg-green-500\/10 {
+    background-color: rgba(46, 213, 115, 0.1) !important;
+}
+
+.text-hp-red {
+    color: #e5484d !important;
+}
+
+.bg-hp-red\/10 {
+    background-color: rgba(229, 72, 77, 0.1) !important;
 }

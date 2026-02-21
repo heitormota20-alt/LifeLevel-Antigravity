@@ -1372,7 +1372,7 @@ function AppContent() {
                                                     </div>
 
                                                     <aside className="summary-sidebar">
-                                                        <h3 className="font-pixel text-[12px] text-bright tracking-[2px] mb-6 uppercase">Resumo</h3>
+                                                        <h3 className="font-pixel text-[24px] text-bright mb-8">Resumo</h3>
                                                         <div className="summary-grid">
                                                             {(() => {
                                                                 const todayKeyStr = new Date().toLocaleDateString();
@@ -1384,20 +1384,22 @@ function AppContent() {
                                                                 const dDiff = tsks.filter(q => (q.completedDates || []).includes(todayKeyStr)).reduce((acc, q) => acc + (q.difficulty || 5), 0);
                                                                 const totalCount = tsks.length + hbts.length;
 
-                                                                return [
+                                                                const summaryItems = [
                                                                     { label: 'Score Total', value: totalCount > 0 ? Math.round(((dTsks + dHbts) / totalCount) * 100) : 0, sub: `Tarefas: ${dTsks} | Hábitos: ${dHbts}`, icon: Flame, color: 'text-orange', bg: 'bg-orange/10' },
-                                                                    { label: 'Tarefas', value: `${dTsks}/${tsks.length}`, sub: 'Tarefas Diárias', icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-500/10' },
-                                                                    { label: 'Hábitos', value: `${dHbts}/${hbts.length}`, sub: 'Consistência', icon: RotateCcw, color: 'text-orange', bg: 'bg-orange/10' },
-                                                                    { label: 'Peso Tarefas', value: `${dDiff}/${tDiff}`, sub: 'Valor Heroico', icon: Target, color: 'text-hp-red', bg: 'bg-hp-red/10' },
-                                                                ].map(item => (
-                                                                    <div key={item.label} className="summary-card !bg-[#11141d] border-white/5 p-6 rounded-[24px]">
-                                                                        <div className={`w-8 h-8 rounded-lg ${item.bg} flex items-center justify-center mb-4`}>
-                                                                            <item.icon size={16} className={item.color} />
+                                                                    { label: 'Tarefas', value: `${dTsks}/${tsks.length}`, sub: null, icon: Check, color: 'text-green-500', bg: 'bg-green-500/10' },
+                                                                    { label: 'Hábitos', value: `${dHbts}/${hbts.length}`, sub: null, icon: RotateCcw, color: 'text-orange', bg: 'bg-orange/10' },
+                                                                    { label: 'Peso Tarefas', value: `${dDiff}/${tDiff}`, sub: null, icon: Target, color: 'text-orange', bg: 'bg-orange/10' },
+                                                                ];
+
+                                                                return summaryItems.map(item => (
+                                                                    <div key={item.label} className="summary-card">
+                                                                        <div className={`summary-icon-wrapper ${item.bg}`}>
+                                                                            <item.icon size={20} className={item.color} />
                                                                         </div>
-                                                                        <div>
-                                                                            <p className="font-pixel text-xl text-bright mb-1">{item.value}</p>
-                                                                            <p className="font-pixel text-[8px] text-bright/80 uppercase tracking-widest">{item.label}</p>
-                                                                            {item.sub && <p className="font-pixel text-[6px] text-dim mt-2 uppercase tracking-tighter">{item.sub}</p>}
+                                                                        <div className="mt-2">
+                                                                            <p className="font-pixel text-4xl text-bright font-bold mb-2">{item.value}</p>
+                                                                            <p className="font-pixel text-[12px] text-dim font-medium uppercase tracking-[1px]">{item.label}</p>
+                                                                            {item.sub && <p className="font-pixel text-[10px] text-dim/60 mt-1 uppercase tracking-tight">{item.sub}</p>}
                                                                         </div>
                                                                     </div>
                                                                 ))
