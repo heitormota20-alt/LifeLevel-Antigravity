@@ -69,14 +69,13 @@ button {
     top: 0;
     left: 0;
     right: 0;
-    height: 70px;
-    background: rgba(13, 17, 23, 0.85);
+    background: rgba(13, 17, 23, 0.95);
     backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
     z-index: 1000;
     display: flex;
-    align-items: center;
-    padding: 0 2rem;
+    justify-content: center;
+    padding: 1.5rem 0;
 }
 
 .nav-container {
@@ -89,31 +88,20 @@ button {
 }
 
 .nav-item {
-    font-family: 'var(--font-pixel)';
-    font-size: 8px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    padding: 0.8rem 1.2rem;
-    border-radius: 12px;
+    font-family: var(--font-pixel);
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    border: 1px solid transparent;
 }
 
 .nav-item:hover {
     color: var(--text-bright);
-    background: rgba(255, 255, 255, 0.03);
 }
 
 .nav-item.active {
     color: var(--orange);
-    background: rgba(255, 107, 0, 0.05);
-    border-color: rgba(255, 107, 0, 0.1);
-    box-shadow: 0 4px 20px rgba(255, 107, 0, 0.05);
 }
 
 .nav-item i {
@@ -865,6 +853,18 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
 
 .p-4 {
     padding: 1rem;
+}
+
+.p-8 {
+    padding: 2rem;
+}
+
+.pt-44 {
+    padding-top: 11rem;
+}
+
+.pb-40 {
+    padding-bottom: 10rem;
 }
 
 .py-1 {

@@ -11,6 +11,7 @@
     "preinstall": "npm config set legacy-peer-deps true"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.97.0",
     "lucide-react": "^0.563.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

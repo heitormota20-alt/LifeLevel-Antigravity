@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import { supabase } from './supabaseClient'
+import AuthModal from './AuthModal'
 import {
     Swords,
     Shield,
@@ -40,7 +42,12 @@ import {
     ChevronDown,
     ArrowUpCircle,
     ArrowDownCircle,
-    GripVertical
+    GripVertical,
+    FileText,
+    Layout,
+    Bookmark,
+    Settings,
+    LogOut
 } from 'lucide-react'
 import {
     LineChart,
@@ -409,6 +416,7 @@ function Onboarding({ onComplete, onCancel }) {
 
 // --- MAIN APP ---
 export default function App() {
+    const [session, setSession] = useState(null)
     const [activeTab, setActiveTab] = useState('hoje');
     const [workoutType, setWorkoutType] = useState('superiores');
     const [workoutDone, setWorkoutDone] = useState([]);
@@ -490,9 +498,68 @@ export default function App() {
         }, 3000);
     };
 
-    // Unified Profile Loading & Migration Logic
+    // --- SUPABASE AUTH & DATA SYNC ---
     useEffect(() => {
-        if (currentProfileId) {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session)
+        })
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session)
+        })
+
+        return () => subscription.unsubscribe()
+    }, [])
+
+    const fetchUserData = async (userId) => {
+        try {
+            // Fetch profile
+            const { data: profile, error: pError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single()
+
+            if (pError) throw pError
+
+            // Fetch quests
+            const { data: quests, error: qError } = await supabase
+                .from('quests')
+                .select('*')
+                .eq('user_id', userId)
+
+            if (qError) throw qError
+
+            // Map database names to frontend property names
+            const mappedUser = {
+                ...INITIAL_USER,
+                ...profile,
+                quests: quests.map(q => ({
+                    ...q,
+                    xpReward: q.xp_reward,
+                    goldReward: q.gold_reward,
+                    isRecurring: q.is_recurring,
+                    time: q.time_estimate,
+                    completedDates: q.completed_dates
+                })),
+                id: profile.id
+            }
+
+            setUser(mappedUser)
+        } catch (error) {
+            console.error('Erro ao carregar dados do Supabase:', error)
+        }
+    }
+
+    useEffect(() => {
+        if (session?.user) {
+            fetchUserData(session.user.id)
+        }
+    }, [session])
+
+    // Unified Profile Loading & Migration Logic (Legacy LocalStorage support for guests)
+    useEffect(() => {
+        if (!session && currentProfileId) {
             const activeProfile = profiles.find(p => p.id === currentProfileId);
             if (activeProfile) {
                 // Logic to check if migration is needed before setting state
@@ -570,6 +637,58 @@ export default function App() {
         }
     }, [user]);
 
+    // --- SUPABASE DATA SYNC ---
+    useEffect(() => {
+        if (!session?.user) return
+
+        const syncProfile = async () => {
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    level: user.level,
+                    xp: user.xp,
+                    hp: user.hp,
+                    mp: user.mp,
+                    gold: user.gold,
+                    energy: user.energy,
+                    water: user.water,
+                    weight: user.weight,
+                    height: user.height,
+                    goals: user.goals,
+                    onboarded: user.onboarded
+                })
+                .eq('id', session.user.id)
+
+            if (error) console.error('Erro ao sincronizar perfil:', error)
+        }
+
+        const timer = setTimeout(syncProfile, 2000) // Debounce sync
+        return () => clearTimeout(timer)
+    }, [user.level, user.xp, user.hp, user.mp, user.gold, user.energy, user.water, user.weight, user.height, user.goals, user.onboarded, session])
+
+    // Specific handler for quest sync
+    const syncQuestToSupabase = async (quest) => {
+        if (!session?.user) return
+        const { error } = await supabase
+            .from('quests')
+            .upsert({
+                id: quest.id,
+                user_id: session.user.id,
+                title: quest.title,
+                description: quest.desc,
+                category: quest.category,
+                xp_reward: quest.xpReward,
+                gold_reward: quest.goldReward,
+                is_recurring: quest.isRecurring,
+                time_estimate: quest.time,
+                completed_dates: quest.completedDates,
+                priority: quest.priority,
+                difficulty: quest.difficulty || 5
+            })
+
+        if (error) console.error('Erro ao sincronizar quest:', error)
+    }
+
     // Daily Reset Logic
     useEffect(() => {
         const today = new Date().toLocaleDateString();
@@ -592,10 +711,9 @@ export default function App() {
                             const diffTime = Math.abs(now - lastDate);
                             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                             if (diffDays > 2) {
-                                hpPenalty += (diffDays - 2) * 10; // 10 HP por dia de atraso após o 2º dia
+                                hpPenalty += (diffDays - 2) * 10;
                             }
                         } else {
-                            // Nunca completou, checar desde a criação
                             const created = new Date(q.createdAt || Date.now());
                             const diffTime = Math.abs(now - created);
                             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -1093,63 +1211,82 @@ export default function App() {
 
     return (
         <div className="flex flex-col min-h-screen bg-deep overflow-x-hidden">
+            {!session && <AuthModal />}
             <nav className="top-nav">
-                <div className="nav-container">
-                    {[
-                        { id: 'hoje', label: 'Hoje', icon: Home },
-                        { id: 'tarefas', label: 'Tarefas', icon: ClipboardList },
-                        { id: 'habitos', label: 'Hábitos', icon: RotateCcw },
-                        { id: 'arena', label: 'Arena', icon: Swords },
-                        { id: 'dieta', label: 'Alquimia', icon: Flame },
-                        { id: 'dash', label: 'Stats', icon: BarChart2 },
-                        { id: 'calendar', label: 'Mapa', icon: Calendar },
-                        { id: 'perfil', label: 'Perfil', icon: User }
-                    ].map(tab => (
-                        <div
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`nav-item ${activeTab === tab.id ? 'active' : ''}`}
-                        >
-                            <tab.icon size={16} />
-                            <span>{tab.label}</span>
+                <div className="flex flex-col gap-6 w-full max-w-[1200px] px-8">
+                    {/* Branding Area */}
+                    <div className="flex items-center gap-3 py-2">
+                        <div className="w-10 h-10 rounded-xl bg-orange flex items-center justify-center shadow-[0_0_20px_rgba(255,107,0,0.3)]">
+                            <Flame size={24} className="text-deep fill-deep" />
                         </div>
-                    ))}
+                        <div className="flex flex-col">
+                            <h1 className="font-pixel text-xl text-bright tracking-[2px] mb-0.5">TaskLine</h1>
+                            <p className="font-pixel text-[8px] text-dim uppercase tracking-[3px]">Meça seu esforço diário</p>
+                        </div>
+                    </div>
+
+                    {/* Navigation Tabs */}
+                    <div className="flex gap-8 overflow-x-auto no-scrollbar pb-2">
+                        {[
+                            { id: 'hoje', label: 'Hoje', icon: Home },
+                            { id: 'tarefas', label: 'Tarefas', icon: ClipboardList },
+                            { id: 'habitos', label: 'Hábitos', icon: RotateCcw },
+                            { id: 'arena', label: 'Conquistas', icon: Trophy },
+                            { id: 'dash', label: 'Dashboard', icon: BarChart2 },
+                            { id: 'calendar', label: 'Calendário', icon: Calendar },
+                            { id: 'dieta', label: 'Categorias', icon: Bookmark },
+                            { id: 'perfil', label: 'Configurações', icon: Settings }
+                        ].map(tab => (
+                            <div
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`nav-item !flex-row !gap-3 !p-0 !min-w-0 transition-opacity whitespace-nowrap ${activeTab === tab.id ? 'active' : 'opacity-40 hover:opacity-100'}`}
+                            >
+                                <span className={`font-pixel text-[10px] uppercase tracking-[1px] ${activeTab === tab.id ? 'text-orange' : 'text-bright'}`}>{tab.label}</span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </nav>
 
-            <div className="flex-1 p-4 md:p-8 pt-24 pb-40">
+            <div className="flex-1 p-4 md:p-8 pt-44 pb-40">
                 <div className="container mx-auto">
                     {activeTab === 'hoje' && (
                         <div className="animate-slide-up">
-                            <header className="mb-12">
-                                <h1 className="font-pixel text-2xl text-bright mb-2">Hoje</h1>
-                                <p className="font-pixel text-dim text-xs capitalize">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-                            </header>
-
                             <div className="hoje-grid">
-                                <div className="space-y-12">
+                                <div className="space-y-16">
+                                    <div className="text-center mb-12">
+                                        <h1 className="font-pixel text-3xl text-bright mb-2">Hoje</h1>
+                                        <p className="font-pixel text-dim text-[10px] uppercase tracking-[2px]">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                                    </div>
+
                                     <section>
                                         <div className="flex items-center gap-3 mb-6">
-                                            <ClipboardList size={22} className="text-orange" />
-                                            <h2 className="font-pixel text-sm text-bright tracking-[2px] uppercase">Tarefas</h2>
+                                            <FileText size={18} className="text-dim" />
+                                            <h2 className="font-pixel text-[10px] text-bright tracking-[2px] uppercase">Tarefas</h2>
                                         </div>
                                         <button
                                             onClick={() => {
                                                 setNewQuestData(prev => ({ ...prev, category: 'TAREFAS', isRecurring: false }));
                                                 setShowNewQuestModal(true);
                                             }}
-                                            className="w-full bg-[#ff6b00] hover:bg-[#ff8533] text-deep font-pixel py-5 rounded-2xl flex items-center justify-center gap-3 transition-all mb-8 shadow-lg shadow-orange/20"
+                                            className="w-full bg-[#ff6b00] hover:bg-[#ff8533] text-deep font-bold py-5 rounded-2xl flex items-center justify-center gap-3 transition-all mb-12 shadow-lg shadow-orange/20"
                                         >
                                             <Plus size={20} className="stroke-[3px]" />
-                                            <span className="text-[10px] font-bold tracking-[2px]">NOVA TAREFA</span>
+                                            <span className="font-pixel text-[10px] tracking-[2px]">NOVA TAREFA</span>
                                         </button>
 
                                         <div className="space-y-4">
                                             {user.quests.filter(q => q.category === 'TAREFAS').length === 0 ? (
-                                                <div className="py-20 text-center opacity-30">
-                                                    <GripVertical size={40} className="mx-auto mb-4" />
-                                                    <p className="font-pixel text-[10px] uppercase tracking-widest">Nenhuma tarefa encontrada</p>
-                                                    <p className="font-pixel text-[7px] mt-2 text-dim uppercase">Ajuste os filtros ou adicione uma tarefa</p>
+                                                <div className="py-24 text-center opacity-40">
+                                                    <div className="flex justify-center mb-6">
+                                                        <div className="relative">
+                                                            <ClipboardList size={48} className="text-dim/20" />
+                                                            <Check size={24} className="text-dim/40 absolute -bottom-2 -right-2" />
+                                                        </div>
+                                                    </div>
+                                                    <p className="font-pixel text-[11px] text-bright uppercase tracking-widest mb-2">Nenhuma tarefa encontrada</p>
+                                                    <p className="font-pixel text-[8px] text-dim uppercase tracking-wider">Ajuste os filtros ou adicione uma tarefa</p>
                                                 </div>
                                             ) : (
                                                 user.quests.filter(q => q.category === 'TAREFAS').map(q => {
@@ -1159,16 +1296,16 @@ export default function App() {
                                                         <div
                                                             key={q.id}
                                                             onClick={() => handleComplete(q.id)}
-                                                            className={`hoje-task-item ${isDone ? 'opacity-40' : ''}`}
+                                                            className={`hoje-task-item ${isDone ? 'opacity-40 grayscale' : ''}`}
                                                         >
-                                                            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${isDone ? 'bg-orange border-orange shadow-[0_0_15px_rgba(255,107,0,0.4)]' : 'border-white/10'}`}>
+                                                            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${isDone ? 'bg-orange border-orange shadow-[0_0_15px_rgba(255,107,0,0.4)]' : 'border-white/10 group-hover:border-orange/50'}`}>
                                                                 {isDone && <Check size={16} className="text-deep stroke-[3px]" />}
                                                             </div>
                                                             <div className="flex-1">
                                                                 <p className={`font-pixel text-xs text-bright mb-1 ${isDone ? 'line-through' : ''}`}>{q.title}</p>
                                                                 <span className="font-pixel text-[8px] text-dim uppercase tracking-wider">{q.priority} • {q.time}</span>
                                                             </div>
-                                                            <div className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center border border-white/5">
+                                                            <div className="px-3 h-8 rounded-lg bg-surface flex items-center justify-center border border-white/5">
                                                                 <span className="font-pixel text-[8px] text-orange">{q.difficulty || 5}</span>
                                                             </div>
                                                         </div>
@@ -1180,33 +1317,32 @@ export default function App() {
 
                                     <section>
                                         <div className="flex items-center gap-3 mb-6">
-                                            <Zap size={22} className="text-blue" />
-                                            <h2 className="font-pixel text-sm text-bright tracking-[2px] uppercase">Hábitos de Hoje</h2>
+                                            <Layout size={18} className="text-blue" />
+                                            <h2 className="font-pixel text-[10px] text-bright tracking-[2px] uppercase">Hábitos de Hoje</h2>
                                         </div>
                                         <div className="space-y-4">
-                                            {user.quests.filter(q => q.category === 'HÁBITOS').length === 0 ? (
-                                                <div className="py-10 text-center opacity-20">
-                                                    <p className="font-pixel text-[8px] uppercase tracking-widest">Sem hábitos diários</p>
+                                            {user.quests.filter(q => q.category === 'HÁBITOS' || q.isRecurring).length === 0 ? (
+                                                <div className="py-12 text-center opacity-20 border border-dashed border-white/5 rounded-2xl">
+                                                    <p className="font-pixel text-[8px] uppercase tracking-widest">Ritual diário não definido</p>
                                                 </div>
                                             ) : (
-                                                user.quests.filter(q => q.category === 'HÁBITOS').map(q => {
+                                                user.quests.filter(q => q.category === 'HÁBITOS' || q.isRecurring).map(q => {
                                                     const currentDayKey = new Date().toLocaleDateString();
                                                     const isDone = (q.completedDates || []).includes(currentDayKey);
                                                     return (
                                                         <div
                                                             key={q.id}
                                                             onClick={() => handleComplete(q.id)}
-                                                            className={`hoje-task-item ${isDone ? 'opacity-40' : ''}`}
+                                                            className={`hoje-task-item !bg-[#0d1117] border-white/5 hover:border-blue/30 ${isDone ? 'opacity-40' : ''}`}
                                                         >
                                                             <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${isDone ? 'bg-blue border-blue shadow-[0_0_15px_rgba(0,145,255,0.4)]' : 'border-white/10'}`}>
                                                                 {isDone && <Check size={16} className="text-deep stroke-[3px]" />}
                                                             </div>
                                                             <div className="flex-1">
-                                                                <p className={`font-pixel text-xs text-bright mb-1 ${isDone ? 'line-through' : ''}`}>{q.title}</p>
-                                                                <span className="font-pixel text-[8px] text-dim uppercase tracking-wider">Hábito Diário</span>
+                                                                <p className={`font-pixel text-[11px] text-bright mb-1 ${isDone ? 'line-through' : ''}`}>{q.title}</p>
                                                             </div>
-                                                            <div className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center border border-white/5">
-                                                                <span className="font-pixel text-[8px] text-blue">{q.difficulty || 5}</span>
+                                                            <div className="px-3 h-8 rounded-lg bg-surface flex items-center justify-center border border-white/5">
+                                                                <span className="font-pixel text-[8px] text-blue">{(q.completedDates || []).length}</span>
                                                             </div>
                                                         </div>
                                                     );
@@ -1217,30 +1353,32 @@ export default function App() {
                                 </div>
 
                                 <aside className="summary-sidebar">
-                                    <h3 className="font-pixel text-sm text-bright tracking-[2px] mb-2 uppercase">Resumo</h3>
+                                    <h3 className="font-pixel text-[12px] text-bright tracking-[2px] mb-6 uppercase">Resumo</h3>
                                     <div className="summary-grid">
                                         {(() => {
                                             const todayKeyStr = new Date().toLocaleDateString();
                                             const tsks = user.quests.filter(q => q.category === 'TAREFAS');
-                                            const hbts = user.quests.filter(q => q.category === 'HÁBITOS');
+                                            const hbts = user.quests.filter(q => q.category === 'HÁBITOS' || q.isRecurring);
                                             const dTsks = tsks.filter(q => (q.completedDates || []).includes(todayKeyStr)).length;
                                             const dHbts = hbts.filter(q => (q.completedDates || []).includes(todayKeyStr)).length;
                                             const tDiff = tsks.reduce((acc, q) => acc + (q.difficulty || 5), 0);
                                             const dDiff = tsks.filter(q => (q.completedDates || []).includes(todayKeyStr)).reduce((acc, q) => acc + (q.difficulty || 5), 0);
                                             const totalCount = tsks.length + hbts.length;
-                                            const scr = totalCount > 0 ? Math.round(((dTsks + dHbts) / totalCount) * 100) : 0;
 
                                             return [
-                                                { label: 'Score Total', value: scr, sub: `Tarefas: ${dTsks} | Hábitos: ${dHbts}`, icon: Flame, color: 'text-orange', bg: 'bg-orange/10' },
+                                                { label: 'Score Total', value: totalCount > 0 ? Math.round(((dTsks + dHbts) / totalCount) * 100) : 0, sub: `Tarefas: ${dTsks} | Hábitos: ${dHbts}`, icon: Flame, color: 'text-orange', bg: 'bg-orange/10' },
+                                                { label: 'Tarefas', value: `${dTsks}/${tsks.length}`, sub: 'Tarefas Diárias', icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-500/10' },
+                                                { label: 'Hábitos', value: `${dHbts}/${hbts.length}`, sub: 'Consistência', icon: RotateCcw, color: 'text-orange', bg: 'bg-orange/10' },
+                                                { label: 'Peso Tarefas', value: `${dDiff}/${tDiff}`, sub: 'Valor Heroico', icon: Target, color: 'text-hp-red', bg: 'bg-hp-red/10' },
                                             ].map(item => (
-                                                <div key={item.label} className="summary-card">
-                                                    <div className={`summary-icon ${item.bg}`}>
+                                                <div key={item.label} className="summary-card !bg-[#11141d] border-white/5 p-6 rounded-[24px]">
+                                                    <div className={`w-8 h-8 rounded-lg ${item.bg} flex items-center justify-center mb-4`}>
                                                         <item.icon size={16} className={item.color} />
                                                     </div>
                                                     <div>
-                                                        <p className="font-pixel text-2xl text-bright mb-1">{item.value}</p>
-                                                        <p className="font-pixel text-[9px] text-bright uppercase tracking-wider">{item.label}</p>
-                                                        <p className="font-pixel text-[7px] text-dim mt-1 uppercase leading-tight">{item.sub}</p>
+                                                        <p className="font-pixel text-xl text-bright mb-1">{item.value}</p>
+                                                        <p className="font-pixel text-[8px] text-bright/80 uppercase tracking-widest">{item.label}</p>
+                                                        {item.sub && <p className="font-pixel text-[6px] text-dim mt-2 uppercase tracking-tighter">{item.sub}</p>}
                                                     </div>
                                                 </div>
                                             ))
@@ -1947,19 +2085,19 @@ export default function App() {
                                 <h3 className="font-pixel text-[7px] text-dim uppercase tracking-[3px] px-2">Zona de Gerenciamento</h3>
                                 <div className="grid grid-cols-1 gap-3">
                                     <button
-                                        onClick={() => setCurrentProfileId(null)}
+                                        onClick={() => supabase.auth.signOut()}
                                         className="w-full h-16 rounded-2xl bg-surface/40 hover:bg-surface/60 border border-white/5 transition-all flex items-center justify-center gap-4 group"
                                     >
-                                        <Users size={18} className="text-dim group-hover:text-violet transition-colors" />
-                                        <span className="font-pixel text-[9px] text-bright uppercase tracking-widest">Trocar Personagem</span>
+                                        <LogOut size={18} className="text-dim group-hover:text-orange transition-colors" />
+                                        <span className="font-pixel text-[9px] text-bright uppercase tracking-widest">Sair da Conta</span>
                                     </button>
 
                                     <button
-                                        onClick={(e) => deleteProfile(e, user.id)}
+                                        onClick={() => setProfileToDelete(user.id)}
                                         className="w-full h-16 rounded-2xl bg-hp-red/5 hover:bg-hp-red/10 border border-hp-red/10 hover:border-hp-red/30 transition-all flex items-center justify-center gap-4 group"
                                     >
                                         <Skull size={18} className="text-hp-red opacity-50 group-hover:opacity-100 transition-opacity" />
-                                        <span className="font-pixel text-[9px] text-hp-red uppercase tracking-widest">Excluir Herói</span>
+                                        <span className="font-pixel text-[9px] text-hp-red uppercase tracking-widest">Excluir Personagem</span>
                                     </button>
                                 </div>
                             </div>
