@@ -42,16 +42,41 @@
     padding: 0;
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
+    font-family: inherit;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+    font-family: inherit;
+    font-feature-settings: inherit;
+    font-variation-settings: inherit;
+    font-size: 100%;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    margin: 0;
+    padding: 0;
 }
 
 button {
     cursor: pointer;
-    font-family: inherit;
     border: none;
     background: none;
-    padding: 0;
-    color: inherit;
     outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Padrão de Espaçamento para Botões (exceto Header) */
+button:not(.nav-item):not(.top-nav button):not(.view-toggle-btn):not(.btn-ghost):not(.summary-card button) {
+    padding: 16px 32px;
+    border-radius: 16px;
 }
 
 .btn-ghost {
