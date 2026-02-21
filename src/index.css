@@ -70,14 +70,19 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 1.25rem !important;
+    /* Aumentado para 20px para mais respiro */
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Padrão de Espaçamento para Botões (exceto Header) */
 button:not(.nav-item):not(.top-nav button):not(.view-toggle-btn):not(.btn-ghost):not(.summary-card button) {
-    padding: 16px 32px;
-    border-radius: 16px;
+    padding: 20px 48px;
+    /* Thick premium padding */
+    border-radius: 20px;
+    font-weight: 700;
 }
+
 
 .btn-ghost {
     background: transparent !important;
@@ -1886,11 +1891,12 @@ input[type="range"]::-moz-range-thumb {
     background: rgba(22, 27, 34, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 20px;
-    padding: 16px 20px;
+    padding: 18px 24px;
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 12px;
+    gap: 20px;
+    /* Espaço maior entre ícone/bola e texto */
+    margin-bottom: 16px;
     transition: all 0.2s ease;
     cursor: pointer;
 }
@@ -2090,3 +2096,8 @@ input[type="range"]::-moz-range-thumb {
 .bg-deep {
     background-color: var(--bg-deep) !important;
 }
+/* Standardized Gaps */
+.gap-3 { gap: 1.25rem !important; }
+.gap-2 { gap: 0.75rem !important; }
+.gap-4 { gap: 1.5rem !important; }
+.gap-6 { gap: 2rem !important; }
