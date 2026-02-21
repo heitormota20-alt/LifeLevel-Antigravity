@@ -1299,11 +1299,10 @@ function AppContent() {
 
                                                             <div className="space-y-4">
                                                                 {user.quests.filter(q => q.category === 'TAREFAS').length === 0 ? (
-                                                                    <div className="py-24 text-center opacity-40">
+                                                                    <div className="py-16 text-center opacity-40">
                                                                         <div className="flex justify-center mb-6">
                                                                             <div className="relative">
                                                                                 <ClipboardList size={48} className="text-dim/20" />
-                                                                                <Check size={24} className="text-dim/40 absolute -bottom-2 -right-2" />
                                                                             </div>
                                                                         </div>
                                                                         <p className="font-pixel text-[11px] text-bright uppercase tracking-widest mb-2">Nenhuma tarefa encontrada</p>
@@ -1467,11 +1466,10 @@ function AppContent() {
 
                                                 <div className="pt-12">
                                                     {user.quests.filter(q => q.category === 'TAREFAS').length === 0 ? (
-                                                        <div className="py-24 text-center">
+                                                        <div className="py-16 text-center">
                                                             <div className="flex justify-center mb-8">
                                                                 <div className="relative opacity-30">
                                                                     <ClipboardList size={64} className="text-dim/40" />
-                                                                    <Check size={32} className="text-dim absolute -bottom-2 -right-2" />
                                                                 </div>
                                                             </div>
                                                             <p className="font-pixel text-[12px] text-bright uppercase tracking-[3px] mb-3">Nenhuma tarefa encontrada</p>

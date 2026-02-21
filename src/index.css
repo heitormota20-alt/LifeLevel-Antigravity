@@ -2101,3 +2101,6 @@ input[type="range"]::-moz-range-thumb {
 .gap-2 { gap: 0.75rem !important; }
 .gap-4 { gap: 1.5rem !important; }
 .gap-6 { gap: 2rem !important; }
+
+.py-16 { padding-top: 64px !important; padding-bottom: 64px !important; }
+.py-24 { padding-top: 96px !important; padding-bottom: 96px !important; }
