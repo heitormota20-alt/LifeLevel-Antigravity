@@ -1099,9 +1099,10 @@ export default function App() {
                         { id: 'hoje', label: 'Hoje', icon: Home },
                         { id: 'tarefas', label: 'Tarefas', icon: ClipboardList },
                         { id: 'habitos', label: 'Hábitos', icon: RotateCcw },
-                        { id: 'conquistas', label: 'Conquistas', icon: Trophy },
-                        { id: 'dash', label: 'Dashboard', icon: BarChart2 },
-                        { id: 'calendar', label: 'Calendário', icon: Calendar },
+                        { id: 'arena', label: 'Arena', icon: Swords },
+                        { id: 'dieta', label: 'Alquimia', icon: Flame },
+                        { id: 'dash', label: 'Stats', icon: BarChart2 },
+                        { id: 'calendar', label: 'Mapa', icon: Calendar },
                         { id: 'perfil', label: 'Perfil', icon: User }
                     ].map(tab => (
                         <div
@@ -1247,6 +1248,130 @@ export default function App() {
                                     </div>
                                 </aside>
                             </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'tarefas' && (
+                        <div className="animate-slide-up pb-24 max-w-4xl mx-auto">
+                            <header className="mb-12">
+                                <div className="flex items-center gap-4 mb-2">
+                                    <ClipboardList size={32} className="text-blue" />
+                                    <h2 className="font-pixel text-2xl text-bright">Missões Ativas</h2>
+                                </div>
+                                <p className="font-pixel text-dim text-[8px] uppercase tracking-[4px]">Gerenciamento de Tarefas e Objetivos Únicos</p>
+                            </header>
+
+                            <button
+                                onClick={() => {
+                                    setNewQuestData(prev => ({ ...prev, category: 'TAREFAS', isRecurring: false }));
+                                    setShowNewQuestModal(true);
+                                }}
+                                className="w-full bg-blue/10 hover:bg-blue/20 border border-blue/20 text-blue font-pixel py-6 rounded-2xl flex items-center justify-center gap-3 transition-all mb-12 group"
+                            >
+                                <Plus size={24} className="group-hover:rotate-90 transition-transform" />
+                                <span className="text-[10px] font-bold tracking-[2px]">FORJAR NOVA TAREFA</span>
+                            </button>
+
+                            <div className="space-y-4">
+                                {user.quests.filter(q => q.category === 'TAREFAS').length === 0 ? (
+                                    <div className="py-32 text-center opacity-20 border-2 border-dashed border-white/5 rounded-3xl">
+                                        <Ghost size={64} className="mx-auto mb-6" />
+                                        <p className="font-pixel text-[10px] uppercase tracking-widest">O mural de missões está vazio</p>
+                                    </div>
+                                ) : (
+                                    user.quests.filter(q => q.category === 'TAREFAS').map(q => {
+                                        const currentDayKey = new Date().toLocaleDateString();
+                                        const isDone = (q.completedDates || []).includes(currentDayKey);
+                                        return (
+                                            <div
+                                                key={q.id}
+                                                onClick={() => handleComplete(q.id)}
+                                                className={`premium-card !p-6 flex items-center gap-6 border-white/5 hover:border-blue/30 transition-all cursor-pointer group ${isDone ? 'opacity-40 grayscale' : ''}`}
+                                            >
+                                                <div className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all ${isDone ? 'bg-blue border-blue shadow-[0_0_20px_rgba(0,145,255,0.4)]' : 'border-white/10 group-hover:border-blue/50'}`}>
+                                                    {isDone ? <Check size={24} className="text-white" /> : <div className="w-2 h-2 rounded-full bg-blue opacity-50"></div>}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-3 mb-1">
+                                                        <p className={`font-pixel text-sm text-bright ${isDone ? 'line-through' : ''}`}>{q.title}</p>
+                                                        <span className={`px-2 py-0.5 rounded text-[8px] font-pixel ${q.priority === 'Alta' ? 'bg-hp-red/10 text-hp-red' : 'bg-blue/10 text-blue'}`}>{q.priority}</span>
+                                                    </div>
+                                                    <p className="text-[10px] text-dim font-sans">{q.desc}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="font-pixel text-[12px] text-orange mb-1">+{q.xpReward} XP</div>
+                                                    <div className="font-pixel text-[8px] text-dim">{q.time}</div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'habitos' && (
+                        <div className="animate-slide-up pb-24 max-w-4xl mx-auto">
+                            <header className="mb-12">
+                                <div className="flex items-center gap-4 mb-2">
+                                    <RotateCcw size={32} className="text-violet" />
+                                    <h2 className="font-pixel text-2xl text-bright">Ritual Diário</h2>
+                                </div>
+                                <p className="font-pixel text-dim text-[8px] uppercase tracking-[4px]">Consistência é a Verdadeira Magia</p>
+                            </header>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {user.quests.filter(q => q.category === 'HÁBITOS' || q.isRecurring).map(q => {
+                                    const currentDayKey = new Date().toLocaleDateString();
+                                    const isDone = (q.completedDates || []).includes(currentDayKey);
+                                    const streak = (q.completedDates || []).length;
+
+                                    return (
+                                        <div
+                                            key={q.id}
+                                            onClick={() => handleComplete(q.id)}
+                                            className={`premium-card !p-8 bg-surface/20 border-white/5 hover:border-violet/30 transition-all cursor-pointer relative overflow-hidden group ${isDone ? 'opacity-50' : ''}`}
+                                        >
+                                            <div className="flex justify-between items-start mb-6 relative z-10">
+                                                <div className={`w-10 h-10 rounded-xl border-2 flex items-center justify-center transition-all ${isDone ? 'bg-violet border-violet shadow-[0_0_15px_rgba(110,86,207,0.4)]' : 'border-white/10 group-hover:border-violet/50'}`}>
+                                                    {isDone ? <Check size={20} className="text-white" /> : <RotateCcw size={18} className="text-dim group-hover:text-violet transition-colors" />}
+                                                </div>
+                                                <div className="flex flex-col items-end">
+                                                    <div className="font-pixel text-[10px] text-violet flex items-center gap-2">
+                                                        <Flame size={12} fill="currentColor" />
+                                                        <span>STREAK: {streak}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="relative z-10">
+                                                <h4 className={`font-pixel text-xs text-bright mb-2 ${isDone ? 'line-through opacity-50' : ''}`}>{q.title}</h4>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="h-1.5 flex-1 bg-deep rounded-full overflow-hidden">
+                                                        <div
+                                                            className="h-full bg-violet"
+                                                            style={{ width: `${Math.min(100, (streak / 30) * 100)}%` }}
+                                                        ></div>
+                                                    </div>
+                                                    <span className="font-pixel text-[8px] text-dim">{(streak / 30 * 100).toFixed(0)}%</span>
+                                                </div>
+                                            </div>
+                                            <div className={`absolute -bottom-8 -right-8 w-24 h-24 bg-violet/5 blur-3xl rounded-full transition-opacity ${isDone ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}></div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            <button
+                                onClick={() => {
+                                    setNewQuestData(prev => ({ ...prev, category: 'HÁBITOS', isRecurring: true }));
+                                    setShowNewQuestModal(true);
+                                }}
+                                className="w-full mt-12 bg-surface/40 hover:bg-surface/60 border border-white/5 text-dim hover:text-bright font-pixel py-4 rounded-xl flex items-center justify-center gap-3 transition-all"
+                            >
+                                <Plus size={16} />
+                                <span className="text-[8px] tracking-[1px]">ADICIONAR NOVO HÁBITO</span>
+                            </button>
                         </div>
                     )}
 
@@ -1492,552 +1617,611 @@ export default function App() {
                                     })()}
                                 </div>
                             </div>
-                        )}
+                        </div>
+                    )}
 
-                            {activeTab === 'arena' && (
-                                <div className="animate-slide-up pb-20 max-w-4xl mx-auto">
-                                    {/* Oracle Section */}
-                                    <div className="master-say mb-12 relative p-8 bg-surface/40 border-violet/50 rounded-[32px]">
-                                        <div className="master-badge !bg-violet-dark text-[7px] px-4 py-1.5 uppercase tracking-[2px]">ORÁCULO</div>
-                                        <div className="w-16 h-16 rounded-2xl bg-deep border-2 border-violet/30 flex items-center justify-center shadow-[0_0_20px_rgba(110,86,207,0.2)]">
-                                            <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=oracle&backgroundColor=05070a" className="w-10 h-10" alt="Oracle" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="font-pixel text-sm text-bright italic leading-relaxed">"O Protocolo Anti-Gravity foi iniciado."</p>
-                                            <p className="font-pixel text-[7px] text-violet mt-3 uppercase tracking-[2px] opacity-70">Sincronizar com o vácuo</p>
-                                        </div>
-                                    </div>
+                    {activeTab === 'arena' && (
+                        <div className="animate-slide-up pb-20 max-w-4xl mx-auto">
+                            {/* Oracle Section */}
+                            <div className="master-say mb-12 relative p-8 bg-surface/40 border-violet/50 rounded-[32px]">
+                                <div className="master-badge !bg-violet-dark text-[7px] px-4 py-1.5 uppercase tracking-[2px]">ORÁCULO</div>
+                                <div className="w-16 h-16 rounded-2xl bg-deep border-2 border-violet/30 flex items-center justify-center shadow-[0_0_20px_rgba(110,86,207,0.2)]">
+                                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=oracle&backgroundColor=05070a" className="w-10 h-10" alt="Oracle" />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="font-pixel text-sm text-bright italic leading-relaxed">"O Protocolo Anti-Gravity foi iniciado."</p>
+                                    <p className="font-pixel text-[7px] text-violet mt-3 uppercase tracking-[2px] opacity-70">Sincronizar com o vácuo</p>
+                                </div>
+                            </div>
 
-                                    {/* Day Selector */}
-                                    <div className="flex justify-center gap-3 mb-12">
-                                        {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day, idx) => (
+                            {/* Day Selector */}
+                            <div className="flex justify-center gap-3 mb-12">
+                                {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day, idx) => (
+                                    <button
+                                        key={day}
+                                        onClick={() => setSelectedDay(idx)}
+                                        className={`w-14 h-10 rounded-xl font-pixel text-[8px] transition-all flex items-center justify-center border ${selectedDay === idx ? 'bg-violet border-violet text-white shadow-[0_4px_15px_rgba(110,86,207,0.4)]' : 'bg-surface/50 border-border md:hover:border-violet/50 text-dim'}`}
+                                    >
+                                        {day}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Protocol Area */}
+                            <div className="premium-card p-12 bg-surface/20 border-violet/20 rounded-[40px] text-center mb-8 min-h-[400px] flex flex-col justify-center items-center relative overflow-hidden">
+                                {!isProtocolActive ? (
+                                    <div className="space-y-12 animate-slide-up w-full">
+                                        <h2 className="font-pixel text-sm text-dim tracking-[4px] opacity-50 uppercase">
+                                            FORGE ANTI-GRAVITY: {workoutType === 'superiores' ? 'SUPERIOR' : 'INFERIOR'}
+                                        </h2>
+
+                                        <div className="flex gap-6 justify-center">
                                             <button
-                                                key={day}
-                                                onClick={() => setSelectedDay(idx)}
-                                                className={`w-14 h-10 rounded-xl font-pixel text-[8px] transition-all flex items-center justify-center border ${selectedDay === idx ? 'bg-violet border-violet text-white shadow-[0_4px_15px_rgba(110,86,207,0.4)]' : 'bg-surface/50 border-border md:hover:border-violet/50 text-dim'}`}
+                                                onClick={() => setWorkoutType('superiores')}
+                                                className={`px-6 py-3 rounded-full font-pixel text-[7px] border transition-all ${workoutType === 'superiores' ? 'bg-violet border-violet text-white' : 'bg-deep border-border text-dim'}`}
                                             >
-                                                {day}
+                                                SUPERIOR
                                             </button>
-                                        ))}
+                                            <button
+                                                onClick={() => setWorkoutType('inferiores')}
+                                                className={`px-6 py-3 rounded-full font-pixel text-[7px] border transition-all ${workoutType === 'inferiores' ? 'bg-hp-red border-hp-red text-white' : 'bg-deep border-border text-dim'}`}
+                                            >
+                                                INFERIOR
+                                            </button>
+                                        </div>
+
+                                        <button
+                                            onClick={() => setIsProtocolActive(true)}
+                                            className="btn-premium max-w-sm mx-auto !h-16 !rounded-2xl shadow-[0_0_30px_rgba(110,86,207,0.3)] hover:scale-105 transition-transform"
+                                        >
+                                            INVOCAR PROTOCOLO IA
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="w-full animate-slide-up">
+                                        <div className="flex items-center justify-between mb-8">
+                                            <h3 className="font-pixel text-[10px] text-violet uppercase tracking-widest">Protocolo Ativo: {workoutType}</h3>
+                                            <button
+                                                onClick={() => { setIsProtocolActive(false); setWorkoutDone([]); }}
+                                                className="font-pixel text-[7px] text-dim hover:text-hp-red transition-colors"
+                                            >
+                                                [ CANCELAR ]
+                                            </button>
+                                        </div>
+
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-left font-pixel">
+                                                <thead>
+                                                    <tr className="border-b border-border/50">
+                                                        <th className="py-4 text-[7px] text-dim uppercase">NOME</th>
+                                                        <th className="py-4 text-[7px] text-dim uppercase text-center">CARGA</th>
+                                                        <th className="py-4 text-[7px] text-dim text-right pr-4 uppercase">CHECK</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {WORKOUTS[workoutType].map(ex => (
+                                                        <tr
+                                                            key={ex.id}
+                                                            onClick={() => toggleExercise(ex.id)}
+                                                            className="border-b border-border/20 hover:bg-violet/5 transition-colors cursor-pointer group"
+                                                        >
+                                                            <td className="py-5">
+                                                                <span className="text-sm font-bold text-bright tracking-wide block">{ex.name}</span>
+                                                            </td>
+                                                            <td className="py-5 text-center">
+                                                                <span className="text-[10px] text-violet bg-violet/10 px-3 py-1.5 rounded-lg border border-violet/20">
+                                                                    {ex.detail}
+                                                                </span>
+                                                            </td>
+                                                            <td className="py-5 text-right pr-4">
+                                                                <div className={`w-6 h-6 border-2 flex items-center justify-center rounded-lg transition-all ml-auto ${workoutDone.includes(ex.id) ? 'bg-violet border-violet shadow-[0_0_10px_rgba(110,86,207,0.5)]' : 'border-border group-hover:border-violet/50'}`}>
+                                                                    {workoutDone.includes(ex.id) && <CheckCircle2 size={12} className="text-white" />}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div className="mt-12 space-y-8">
+                                            <div className="w-full bg-deep h-1.5 rounded-full overflow-hidden border border-border/30">
+                                                <div
+                                                    className="h-full bg-violet shadow-[0_0_15px_purple] transition-all duration-700 ease-out"
+                                                    style={{ width: `${(workoutDone.length / WORKOUTS[workoutType].length) * 100}%` }}
+                                                />
+                                            </div>
+                                            <button
+                                                onClick={finishWorkoutQuest}
+                                                className={`btn-premium !h-14 !rounded-xl text-[9px] ${isWorkoutComplete() ? 'animate-pulse' : 'opacity-30 grayscale cursor-not-allowed'}`}
+                                            >
+                                                SINCRONIZAR PROGRESSO
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'dieta' && (
+                        <div className="animate-slide-up pb-24 max-w-5xl mx-auto space-y-8">
+                            {/* Header IA Reorganizado */}
+                            <div className="flex flex-col md:flex-row items-stretch gap-6 mb-10">
+                                <div className="flex-1 flex items-center gap-6">
+                                    <div className="w-16 h-16 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.1)] shrink-0">
+                                        <Utensils size={28} className="text-green-400" />
+                                    </div>
+                                    <div>
+                                        <h2 className="font-pixel text-[12px] text-green-400 mb-1">ALQUIMIA NUTRICIONAL</h2>
+                                        <p className="font-pixel text-[6px] text-dim uppercase tracking-[2px]">Módulo de Forja Biológica IA</p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-[#161b22] px-8 py-4 rounded-3xl border border-white/5 flex flex-col justify-center min-w-[220px]">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="font-pixel text-[6px] text-dim uppercase">Cálculo de TDEE</span>
+                                        <Activity size={10} className="text-green-500 opacity-40" />
+                                    </div>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="font-pixel text-[14px] text-bright">{(() => {
+                                            const weight = parseFloat(user.weight) || 70;
+                                            const height = parseFloat(user.height) || 170;
+                                            let base = weight * 22 * 1.35;
+                                            if (user.goals.includes('Emagrecer')) base -= 500;
+                                            if (user.goals.includes('Ganhar massa')) base += 500;
+                                            return Math.round(base);
+                                        })()}</span>
+                                        <span className="font-pixel text-[6px] text-dim">KCAL / DIA</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Status Grid Compacto */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div className="premium-card !bg-surface/20 !p-4 border-white/5">
+                                    <div className="flex items-center gap-3">
+                                        <Flame size={14} className="text-orange" />
+                                        <div>
+                                            <span className="font-pixel text-[5px] text-dim uppercase block">Energia Alvo</span>
+                                            <p className="font-pixel text-[8px] text-bright">{user.maxEnergy || 2180} KCAL</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="premium-card !bg-surface/20 !p-4 border-white/5">
+                                    <div className="flex items-center gap-3">
+                                        <Droplets size={14} className="text-blue" />
+                                        <div>
+                                            <span className="font-pixel text-[5px] text-dim uppercase block">Mana Líquida</span>
+                                            <p className="font-pixel text-[8px] text-bright">{user.maxWater || 2450} ML</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="premium-card !bg-surface/20 !p-4 border-white/5">
+                                    <div className="flex items-center gap-3">
+                                        <Target size={14} className="text-hp-red" />
+                                        <div>
+                                            <span className="font-pixel text-[5px] text-dim uppercase block">Objetivo</span>
+                                            <p className="font-pixel text-[8px] text-bright uppercase">{
+                                                user.goals.includes('Emagrecer') ? 'Déficit' :
+                                                    user.goals.includes('Ganhar massa') ? 'Massa' : 'Manter'
+                                            }</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={generateDailyPlan}
+                                    className="premium-card !bg-green-500/10 hover:!bg-green-500/20 !p-4 border-green-500/20 text-center transition-all group active:scale-95"
+                                >
+                                    <RotateCcw size={14} className="text-green-400 mx-auto mb-1 group-hover:rotate-180 transition-transform duration-500" />
+                                    <span className="font-pixel text-[6px] text-green-400 uppercase font-bold">Gerar pela IA</span>
+                                </button>
+
+                                <button
+                                    onClick={() => setShowNewMealModal(true)}
+                                    className="premium-card !bg-blue-500/10 hover:!bg-blue-500/20 !p-4 border-blue-500/20 text-center transition-all group active:scale-95"
+                                >
+                                    <Plus size={14} className="text-blue mx-auto mb-1" />
+                                    <span className="font-pixel text-[6px] text-blue uppercase font-bold">Add Manual</span>
+                                </button>
+                            </div>
+
+                            {/* Plano de Refeições IA */}
+                            <div>
+                                <h3 className="font-pixel text-[8px] text-bright tracking-widest mb-6 flex items-center gap-2">
+                                    <ClipboardList size={14} className="text-green-400" /> PLANO DE REFEIÇÕES DIÁRIO
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {(user.dailyMealPlan || []).map((meal, idx) => {
+                                        const isDone = (user.mealDone || []).includes(idx);
+                                        return (
+                                            <div
+                                                key={idx}
+                                                onClick={() => toggleMeal(idx)}
+                                                className={`premium-card !bg-[#0d1117] border-white/5 !p-6 flex flex-col gap-4 relative group hover:border-green-500/30 transition-all overflow-hidden cursor-pointer ${isDone ? 'opacity-30 grayscale-[0.8]' : ''}`}
+                                            >
+                                                <div className="flex items-center justify-between z-10">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`font-pixel text-[8px] px-3 py-1.5 rounded-lg border transition-colors ${isDone ? 'bg-green-500/5 text-green-500/40 border-green-500/10' : 'bg-green-500/10 text-green-400 border-green-500/10'}`}>
+                                                            {meal.time}
+                                                        </div>
+                                                        <h4 className={`font-pixel text-[9px] uppercase tracking-tighter transition-colors ${isDone ? 'text-dim line-through opacity-70' : 'text-bright group-hover:text-green-400'}`}>{meal.name}</h4>
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <span className={`font-pixel text-[7px] transition-colors ${isDone ? 'text-dim/40 line-through' : 'text-dim'}`}>{meal.cals} KCAL</span>
+                                                        {isDone && <Check size={12} className="text-green-500" />}
+                                                    </div>
+                                                </div>
+                                                <p className={`text-[12px] leading-relaxed font-sans z-10 min-h-[40px] transition-colors ${isDone ? 'text-dim/40 italic line-through' : 'text-dim/80'}`}>
+                                                    {meal.selectedItem}
+                                                </p>
+                                                <div className={`absolute top-0 right-0 w-24 h-24 blur-[40px] rounded-full pointer-events-none transition-colors ${isDone ? 'bg-green-500/2' : 'bg-green-500/5 group-hover:bg-green-500/10'}`}></div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Dica IA */}
+                            <div className="premium-card !bg-[#161b22] border-green-500/10 p-6 flex items-center gap-6">
+                                <div className="w-12 h-12 rounded-xl bg-green-500/5 flex items-center justify-center border border-green-500/10 shrink-0">
+                                    <Star size={20} className="text-green-400 animate-pulse" />
+                                </div>
+                                <p className="text-[11px] text-dim italic leading-relaxed">
+                                    "Lembre-se: O gerador de dietas alterna itens para garantir que seu metabolismo não estagne. Refeições variadas evitam a fadiga mental do sistema."
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'perfil' && (
+                        <div className="animate-slide-up max-w-2xl mx-auto space-y-8 pb-32">
+                            {/* Perfil Header Card */}
+                            <div className="premium-card !p-8 bg-surface/30 border-white/5 relative overflow-hidden rounded-[32px]">
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-violet/5 blur-[100px] -mr-32 -mt-32"></div>
+                                <div className="flex flex-col items-center text-center relative z-10">
+                                    <div className="w-24 h-24 rounded-3xl border-2 border-violet/30 p-1 mb-6 shadow-[0_0_30px_rgba(110,86,207,0.2)]">
+                                        <div className="w-full h-full rounded-2xl overflow-hidden bg-deep">
+                                            <img src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.name}`} alt="Avatar" className="w-full h-full object-cover" />
+                                        </div>
+                                    </div>
+                                    <h2 className="font-pixel text-xl text-bright mb-2">{user.name}</h2>
+                                    <div className="flex items-center gap-2 mb-8">
+                                        <span className="font-pixel text-[8px] text-violet uppercase tracking-[3px]">{user.title}</span>
+                                        <span className="text-dim">•</span>
+                                        <span className="font-pixel text-[8px] text-orange uppercase tracking-[3px]">{user.characterClass}</span>
                                     </div>
 
-                                    {/* Protocol Area */}
-                                    <div className="premium-card p-12 bg-surface/20 border-violet/20 rounded-[40px] text-center mb-8 min-h-[400px] flex flex-col justify-center items-center relative overflow-hidden">
-                                        {!isProtocolActive ? (
-                                            <div className="space-y-12 animate-slide-up w-full">
-                                                <h2 className="font-pixel text-sm text-dim tracking-[4px] opacity-50 uppercase">
-                                                    FORGE ANTI-GRAVITY: {workoutType === 'superiores' ? 'SUPERIOR' : 'INFERIOR'}
-                                                </h2>
+                                    <div className="grid grid-cols-2 gap-4 w-full">
+                                        <div className="bg-deep/50 p-6 rounded-2xl border border-white/5">
+                                            <span className="font-pixel text-[6px] text-dim uppercase block mb-2 opacity-50">Nível Atual</span>
+                                            <span className="font-pixel text-xl text-bright">{user.level}</span>
+                                        </div>
+                                        <div className="bg-deep/50 p-6 rounded-2xl border border-white/5">
+                                            <span className="font-pixel text-[6px] text-dim uppercase block mb-2 opacity-50">Ouro Acumulado</span>
+                                            <span className="font-pixel text-xl text-orange">{user.gold}G</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                                                <div className="flex gap-6 justify-center">
-                                                    <button
-                                                        onClick={() => setWorkoutType('superiores')}
-                                                        className={`px-6 py-3 rounded-full font-pixel text-[7px] border transition-all ${workoutType === 'superiores' ? 'bg-violet border-violet text-white' : 'bg-deep border-border text-dim'}`}
-                                                    >
-                                                        SUPERIOR
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setWorkoutType('inferiores')}
-                                                        className={`px-6 py-3 rounded-full font-pixel text-[7px] border transition-all ${workoutType === 'inferiores' ? 'bg-hp-red border-hp-red text-white' : 'bg-deep border-border text-dim'}`}
-                                                    >
-                                                        INFERIOR
-                                                    </button>
-                                                </div>
+                            {/* Stats & Goals Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="premium-card !p-8 bg-surface/20 border-white/5 rounded-[24px]">
+                                    <h3 className="font-pixel text-[8px] text-bright mb-8 flex items-center gap-3">
+                                        <Activity size={16} className="text-violet" />
+                                        <span>ATRIBUTOS FÍSICOS</span>
+                                    </h3>
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center bg-deep/40 p-4 rounded-xl border border-white/5">
+                                            <span className="font-pixel text-[7px] text-dim uppercase">Peso corporal</span>
+                                            <span className="font-pixel text-[10px] text-bright">{user.weight || '--'} KG</span>
+                                        </div>
+                                        <div className="flex justify-between items-center bg-deep/40 p-4 rounded-xl border border-white/5">
+                                            <span className="font-pixel text-[7px] text-dim uppercase">Estatura</span>
+                                            <span className="font-pixel text-[10px] text-bright">{user.height || '--'} CM</span>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                                <button
-                                                    onClick={() => setIsProtocolActive(true)}
-                                                    className="btn-premium max-w-sm mx-auto !h-16 !rounded-2xl shadow-[0_0_30px_rgba(110,86,207,0.3)] hover:scale-105 transition-transform"
-                                                >
-                                                    INVOCAR PROTOCOLO IA
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <div className="w-full animate-slide-up">
-                                                <div className="flex items-center justify-between mb-8">
-                                                    <h3 className="font-pixel text-[10px] text-violet uppercase tracking-widest">Protocolo Ativo: {workoutType}</h3>
-                                                    <button
-                                                        onClick={() => { setIsProtocolActive(false); setWorkoutDone([]); }}
-                                                        className="font-pixel text-[7px] text-dim hover:text-hp-red transition-colors"
-                                                    >
-                                                        [ CANCELAR ]
-                                                    </button>
-                                                </div>
-
-                                                <div className="overflow-x-auto">
-                                                    <table className="w-full text-left font-pixel">
-                                                        <thead>
-                                                            <tr className="border-b border-border/50">
-                                                                <th className="py-4 text-[7px] text-dim uppercase">NOME</th>
-                                                                <th className="py-4 text-[7px] text-dim uppercase text-center">CARGA</th>
-                                                                <th className="py-4 text-[7px] text-dim text-right pr-4 uppercase">CHECK</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {WORKOUTS[workoutType].map(ex => (
-                                                                <tr
-                                                                    key={ex.id}
-                                                                    onClick={() => toggleExercise(ex.id)}
-                                                                    className="border-b border-border/20 hover:bg-violet/5 transition-colors cursor-pointer group"
-                                                                >
-                                                                    <td className="py-5">
-                                                                        <span className="text-sm font-bold text-bright tracking-wide block">{ex.name}</span>
-                                                                    </td>
-                                                                    <td className="py-5 text-center">
-                                                                        <span className="text-[10px] text-violet bg-violet/10 px-3 py-1.5 rounded-lg border border-violet/20">
-                                                                            {ex.detail}
-                                                                        </span>
-                                                                    </td>
-                                                                    <td className="py-5 text-right pr-4">
-                                                                        <div className={`w-6 h-6 border-2 flex items-center justify-center rounded-lg transition-all ml-auto ${workoutDone.includes(ex.id) ? 'bg-violet border-violet shadow-[0_0_10px_rgba(110,86,207,0.5)]' : 'border-border group-hover:border-violet/50'}`}>
-                                                                            {workoutDone.includes(ex.id) && <CheckCircle2 size={12} className="text-white" />}
-                                                                        </div>
-                                                                    </td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-
-                                                <div className="mt-12 space-y-8">
-                                                    <div className="w-full bg-deep h-1.5 rounded-full overflow-hidden border border-border/30">
-                                                        <div
-                                                            className="h-full bg-violet shadow-[0_0_15px_purple] transition-all duration-700 ease-out"
-                                                            style={{ width: `${(workoutDone.length / WORKOUTS[workoutType].length) * 100}%` }}
-                                                        />
-                                                    </div>
-                                                    <button
-                                                        onClick={finishWorkoutQuest}
-                                                        className={`btn-premium !h-14 !rounded-xl text-[9px] ${isWorkoutComplete() ? 'animate-pulse' : 'opacity-30 grayscale cursor-not-allowed'}`}
-                                                    >
-                                                        SINCRONIZAR PROGRESSO
-                                                    </button>
-                                                </div>
-                                            </div>
+                                <div className="premium-card !p-8 bg-surface/20 border-white/5 rounded-[24px]">
+                                    <h3 className="font-pixel text-[8px] text-bright mb-8 flex items-center gap-3">
+                                        <Target size={16} className="text-hp-red" />
+                                        <span>OBJETIVOS ATIVOS</span>
+                                    </h3>
+                                    <div className="flex flex-wrap gap-3">
+                                        {user.goals.length > 0 ? user.goals.map((goal, i) => (
+                                            <span key={i} className="px-4 py-2 rounded-xl bg-hp-red/10 border border-hp-red/20 text-hp-red font-pixel text-[8px] uppercase tracking-wider">
+                                                {goal}
+                                            </span>
+                                        )) : (
+                                            <p className="font-pixel text-[7px] text-dim italic">Sem objetivos definidos</p>
                                         )}
                                     </div>
                                 </div>
-                            )}
+                            </div>
 
-                            {activeTab === 'dieta' && (
-                                <div className="animate-slide-up pb-24 max-w-5xl mx-auto space-y-8">
-                                    {/* Header IA Reorganizado */}
-                                    <div className="flex flex-col md:flex-row items-stretch gap-6 mb-10">
-                                        <div className="flex-1 flex items-center gap-6">
-                                            <div className="w-16 h-16 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.1)] shrink-0">
-                                                <Utensils size={28} className="text-green-400" />
-                                            </div>
-                                            <div>
-                                                <h2 className="font-pixel text-[12px] text-green-400 mb-1">ALQUIMIA NUTRICIONAL</h2>
-                                                <p className="font-pixel text-[6px] text-dim uppercase tracking-[2px]">Módulo de Forja Biológica IA</p>
-                                            </div>
-                                        </div>
+                            {/* Danger Zone Actions */}
+                            <div className="pt-8 space-y-4">
+                                <h3 className="font-pixel text-[7px] text-dim uppercase tracking-[3px] px-2">Zona de Gerenciamento</h3>
+                                <div className="grid grid-cols-1 gap-3">
+                                    <button
+                                        onClick={() => setCurrentProfileId(null)}
+                                        className="w-full h-16 rounded-2xl bg-surface/40 hover:bg-surface/60 border border-white/5 transition-all flex items-center justify-center gap-4 group"
+                                    >
+                                        <Users size={18} className="text-dim group-hover:text-violet transition-colors" />
+                                        <span className="font-pixel text-[9px] text-bright uppercase tracking-widest">Trocar Personagem</span>
+                                    </button>
 
-                                        <div className="bg-[#161b22] px-8 py-4 rounded-3xl border border-white/5 flex flex-col justify-center min-w-[220px]">
-                                            <div className="flex justify-between items-center mb-1">
-                                                <span className="font-pixel text-[6px] text-dim uppercase">Cálculo de TDEE</span>
-                                                <Activity size={10} className="text-green-500 opacity-40" />
-                                            </div>
-                                            <div className="flex items-baseline gap-2">
-                                                <span className="font-pixel text-[14px] text-bright">{(() => {
-                                                    const weight = parseFloat(user.weight) || 70;
-                                                    const height = parseFloat(user.height) || 170;
-                                                    let base = weight * 22 * 1.35;
-                                                    if (user.goals.includes('Emagrecer')) base -= 500;
-                                                    if (user.goals.includes('Ganhar massa')) base += 500;
-                                                    return Math.round(base);
-                                                })()}</span>
-                                                <span className="font-pixel text-[6px] text-dim">KCAL / DIA</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Status Grid Compacto */}
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        <div className="premium-card !bg-surface/20 !p-4 border-white/5">
-                                            <div className="flex items-center gap-3">
-                                                <Flame size={14} className="text-orange" />
-                                                <div>
-                                                    <span className="font-pixel text-[5px] text-dim uppercase block">Energia Alvo</span>
-                                                    <p className="font-pixel text-[8px] text-bright">{user.maxEnergy || 2180} KCAL</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="premium-card !bg-surface/20 !p-4 border-white/5">
-                                            <div className="flex items-center gap-3">
-                                                <Droplets size={14} className="text-blue" />
-                                                <div>
-                                                    <span className="font-pixel text-[5px] text-dim uppercase block">Mana Líquida</span>
-                                                    <p className="font-pixel text-[8px] text-bright">{user.maxWater || 2450} ML</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="premium-card !bg-surface/20 !p-4 border-white/5">
-                                            <div className="flex items-center gap-3">
-                                                <Target size={14} className="text-hp-red" />
-                                                <div>
-                                                    <span className="font-pixel text-[5px] text-dim uppercase block">Objetivo</span>
-                                                    <p className="font-pixel text-[8px] text-bright uppercase">{
-                                                        user.goals.includes('Emagrecer') ? 'Déficit' :
-                                                            user.goals.includes('Ganhar massa') ? 'Massa' : 'Manter'
-                                                    }</p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <button
-                                            onClick={generateDailyPlan}
-                                            className="premium-card !bg-green-500/10 hover:!bg-green-500/20 !p-4 border-green-500/20 text-center transition-all group active:scale-95"
-                                        >
-                                            <RotateCcw size={14} className="text-green-400 mx-auto mb-1 group-hover:rotate-180 transition-transform duration-500" />
-                                            <span className="font-pixel text-[6px] text-green-400 uppercase font-bold">Gerar pela IA</span>
-                                        </button>
-
-                                        <button
-                                            onClick={() => setShowNewMealModal(true)}
-                                            className="premium-card !bg-blue-500/10 hover:!bg-blue-500/20 !p-4 border-blue-500/20 text-center transition-all group active:scale-95"
-                                        >
-                                            <Plus size={14} className="text-blue mx-auto mb-1" />
-                                            <span className="font-pixel text-[6px] text-blue uppercase font-bold">Add Manual</span>
-                                        </button>
-                                    </div>
-
-                                    {/* Plano de Refeições IA */}
-                                    <div>
-                                        <h3 className="font-pixel text-[8px] text-bright tracking-widest mb-6 flex items-center gap-2">
-                                            <ClipboardList size={14} className="text-green-400" /> PLANO DE REFEIÇÕES DIÁRIO
-                                        </h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {(user.dailyMealPlan || []).map((meal, idx) => {
-                                                const isDone = (user.mealDone || []).includes(idx);
-                                                return (
-                                                    <div
-                                                        key={idx}
-                                                        onClick={() => toggleMeal(idx)}
-                                                        className={`premium-card !bg-[#0d1117] border-white/5 !p-6 flex flex-col gap-4 relative group hover:border-green-500/30 transition-all overflow-hidden cursor-pointer ${isDone ? 'opacity-30 grayscale-[0.8]' : ''}`}
-                                                    >
-                                                        <div className="flex items-center justify-between z-10">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className={`font-pixel text-[8px] px-3 py-1.5 rounded-lg border transition-colors ${isDone ? 'bg-green-500/5 text-green-500/40 border-green-500/10' : 'bg-green-500/10 text-green-400 border-green-500/10'}`}>
-                                                                    {meal.time}
-                                                                </div>
-                                                                <h4 className={`font-pixel text-[9px] uppercase tracking-tighter transition-colors ${isDone ? 'text-dim line-through opacity-70' : 'text-bright group-hover:text-green-400'}`}>{meal.name}</h4>
-                                                            </div>
-                                                            <div className="flex items-center gap-3">
-                                                                <span className={`font-pixel text-[7px] transition-colors ${isDone ? 'text-dim/40 line-through' : 'text-dim'}`}>{meal.cals} KCAL</span>
-                                                                {isDone && <Check size={12} className="text-green-500" />}
-                                                            </div>
-                                                        </div>
-                                                        <p className={`text-[12px] leading-relaxed font-sans z-10 min-h-[40px] transition-colors ${isDone ? 'text-dim/40 italic line-through' : 'text-dim/80'}`}>
-                                                            {meal.selectedItem}
-                                                        </p>
-                                                        <div className={`absolute top-0 right-0 w-24 h-24 blur-[40px] rounded-full pointer-events-none transition-colors ${isDone ? 'bg-green-500/2' : 'bg-green-500/5 group-hover:bg-green-500/10'}`}></div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-
-                                    {/* Dica IA */}
-                                    <div className="premium-card !bg-[#161b22] border-green-500/10 p-6 flex items-center gap-6">
-                                        <div className="w-12 h-12 rounded-xl bg-green-500/5 flex items-center justify-center border border-green-500/10 shrink-0">
-                                            <Star size={20} className="text-green-400 animate-pulse" />
-                                        </div>
-                                        <p className="text-[11px] text-dim italic leading-relaxed">
-                                            "Lembre-se: O gerador de dietas alterna itens para garantir que seu metabolismo não estagne. Refeições variadas evitam a fadiga mental do sistema."
-                                        </p>
-                                    </div>
+                                    <button
+                                        onClick={(e) => deleteProfile(e, user.id)}
+                                        className="w-full h-16 rounded-2xl bg-hp-red/5 hover:bg-hp-red/10 border border-hp-red/10 hover:border-hp-red/30 transition-all flex items-center justify-center gap-4 group"
+                                    >
+                                        <Skull size={18} className="text-hp-red opacity-50 group-hover:opacity-100 transition-opacity" />
+                                        <span className="font-pixel text-[9px] text-hp-red uppercase tracking-widest">Excluir Herói</span>
+                                    </button>
                                 </div>
-                            )}
+                            </div>
+                        </div>
+                    )}
 
 
-                            {/* Fail Modal */}
-                            {
-                                showFailModal && (
-                                    <div className="modal-overlay">
-                                        <div className="fail-modal">
-                                            <div className="flex justify-center gap-4 text-4xl mb-6">
-                                                <span>🧙‍♂️</span>
-                                                <span className="text-hp-red animate-pulse">💢</span>
+                    {/* Fail Modal */}
+                    {
+                        showFailModal && (
+                            <div className="modal-overlay">
+                                <div className="fail-modal">
+                                    <div className="flex justify-center gap-4 text-4xl mb-6">
+                                        <span>🧙‍♂️</span>
+                                        <span className="text-hp-red animate-pulse">💢</span>
+                                    </div>
+
+                                    <h2 className="fail-title">
+                                        O MESTRE TE ENCARA COM DESPREZO!
+                                    </h2>
+
+                                    <p className="fail-quote">
+                                        "Achei que era um Maromba, mas tá mais pra um NPC de fundo de cenário. Acorda pra vida!"
+                                    </p>
+
+                                    <p className="fail-positive">
+                                        "AMANHÃ VOCÊ TEM UMA NOVA CHANCE DE NÃO SER UMA VERGONHA PARA ESTA GUILDA!"
+                                    </p>
+
+                                    <button
+                                        onClick={() => setShowFailModal(false)}
+                                        className="btn-humiliation"
+                                    >
+                                        ACEITAR A HUMILHAÇÃO E VOLTAR
+                                    </button>
+                                </div>
+                            </div>
+                        )
+                    }
+                    {/* New Quest Modal */}
+                    {
+                        showNewQuestModal && (
+                            <div className="modal-overlay">
+                                <div className="premium-card modal-card max-w-lg animate-slide-up !bg-[#0d1117] !p-8 !border-blue/30 shadow-[0_0_50px_rgba(0,145,255,0.15)]">
+                                    <div className="flex items-center justify-between mb-8">
+                                        <h2 className="font-pixel text-[10px] flex items-center gap-3 text-blue">
+                                            <Plus size={20} /> FORJAR NOVA QUEST
+                                        </h2>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowNewQuestModal(false)}
+                                            className="text-dim hover:text-white transition-colors p-2"
+                                        >
+                                            <X size={20} />
+                                        </button>
+                                    </div>
+                                    <form onSubmit={addNewQuest} className="space-y-6">
+                                        <div className="space-y-4">
+                                            <input
+                                                type="text"
+                                                placeholder="Título da tarefa..."
+                                                className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-blue/50 outline-none transition-all font-sans"
+                                                value={newQuestData.title}
+                                                onChange={e => setNewQuestData(prev => ({ ...prev, title: e.target.value }))}
+                                                required
+                                            />
+
+                                            <textarea
+                                                placeholder="Descrição (opcional)"
+                                                className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-blue/50 outline-none transition-all font-sans min-h-[80px] resize-none"
+                                                value={newQuestData.desc}
+                                                onChange={e => setNewQuestData(prev => ({ ...prev, desc: e.target.value }))}
+                                            />
+
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <label className="font-pixel text-[6px] text-dim uppercase">Data Limite de Entrega</label>
+                                                    <input
+                                                        type="date"
+                                                        className="w-full bg-[#161b22] border-transparent p-3 rounded-xl text-[10px] outline-none font-sans"
+                                                        value={newQuestData.targetDate}
+                                                        onChange={e => setNewQuestData(prev => ({ ...prev, targetDate: e.target.value }))}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="font-pixel text-[6px] text-dim uppercase">Duração (Min)</label>
+                                                    <input
+                                                        type="number"
+                                                        placeholder="30"
+                                                        className="w-full bg-[#161b22] border-transparent p-3 rounded-xl text-sm outline-none font-sans"
+                                                        value={newQuestData.time}
+                                                        onChange={e => setNewQuestData(prev => ({ ...prev, time: e.target.value }))}
+                                                    />
+                                                </div>
                                             </div>
 
-                                            <h2 className="fail-title">
-                                                O MESTRE TE ENCARA COM DESPREZO!
-                                            </h2>
+                                            <div className="flex items-center justify-between bg-[#161b22] p-4 rounded-xl">
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-sans font-medium">RECORRENTE</span>
+                                                    <span className="text-[8px] font-pixel text-dim">HABITO DIÁRIO</span>
+                                                </div>
+                                                <label className="switch relative inline-block w-10 h-6">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={newQuestData.isRecurring}
+                                                        onChange={e => setNewQuestData(prev => ({ ...prev, isRecurring: e.target.checked }))}
+                                                        className="opacity-0 w-0 h-0"
+                                                    />
+                                                    <span className={`slider round absolute cursor-pointer inset-0 bg-[#0d1117] border border-white/10 transition-all rounded-full before:absolute before:content-[''] before:h-4 before:w-4 before:left-1 before:bottom-0.8 before:bg-blue before:transition-all before:rounded-full ${newQuestData.isRecurring ? 'before:translate-x-4 before:!bg-orange !border-orange/30' : ''}`}></span>
+                                                </label>
+                                            </div>
 
-                                            <p className="fail-quote">
-                                                "Achei que era um Maromba, mas tá mais pra um NPC de fundo de cenário. Acorda pra vida!"
-                                            </p>
+                                            <div className="space-y-4 pt-2">
+                                                <label className="font-pixel text-[6px] text-dim uppercase">Prioridade da Quest</label>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {[
+                                                        { id: 'Alta', label: 'ALTA', color: 'text-hp-red', border: 'border-hp-red/50' },
+                                                        { id: 'Média', label: 'MÉDIA', color: 'text-orange', border: 'border-orange/50' },
+                                                        { id: 'Normal', label: 'NORMAL', color: 'text-blue', border: 'border-blue/50' },
+                                                        { id: 'Sem prioridade', label: 'SEM PRIORIDADE', color: 'text-dim', border: 'border-white/10' }
+                                                    ].map(p => (
+                                                        <button
+                                                            key={p.id}
+                                                            type="button"
+                                                            onClick={() => setNewQuestData(prev => ({ ...prev, priority: p.id }))}
+                                                            className={`px-4 py-3 rounded-xl font-pixel text-[7px] border flex items-center justify-center gap-2 transition-all ${newQuestData.priority === p.id ? `bg-surface ${p.border} ${p.color} shadow-[0_0_15px_rgba(255,255,255,0.05)]` : 'bg-[#161b22] border-transparent text-dim hover:border-white/10'}`}
+                                                        >
+                                                            <Flag size={10} fill={newQuestData.priority === p.id ? 'currentColor' : 'none'} />
+                                                            {p.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
 
-                                            <p className="fail-positive">
-                                                "AMANHÃ VOCÊ TEM UMA NOVA CHANCE DE NÃO SER UMA VERGONHA PARA ESTA GUILDA!"
-                                            </p>
+                                            <div className="space-y-4">
+                                                <div className="flex justify-between items-center">
+                                                    <label className="font-pixel text-[7px] text-dim uppercase">Peso / Esforço</label>
+                                                    <span className="font-pixel text-orange text-sm">{newQuestData.difficulty}</span>
+                                                </div>
+                                                <input
+                                                    type="range"
+                                                    min="1"
+                                                    max="10"
+                                                    className="w-full accent-orange"
+                                                    value={newQuestData.difficulty}
+                                                    onChange={e => setNewQuestData(prev => ({ ...prev, difficulty: e.target.value }))}
+                                                />
+                                                <div className="flex justify-between font-pixel text-[5px] text-dim">
+                                                    <span>FÁCIL</span>
+                                                    <span>DIFÍCIL</span>
+                                                </div>
+                                            </div>
 
+                                            <div className="space-y-4 pt-2">
+                                                <label className="font-pixel text-[6px] text-dim uppercase">Categoria da Missão</label>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {[
+                                                        { id: 'HÁBITOS', label: 'HÁBITOS', color: 'text-violet', border: 'border-violet/50' },
+                                                        { id: 'TAREFAS', label: 'TAREFAS', color: 'text-blue', border: 'border-blue/50' },
+                                                        { id: 'HIGIENE', label: 'HIGIENE', color: 'text-green-400', border: 'border-green-400/50' },
+                                                        { id: 'DIETA', label: 'DIETA', color: 'text-orange', border: 'border-orange/50' }
+                                                    ].map(cat => (
+                                                        <button
+                                                            key={cat.id}
+                                                            type="button"
+                                                            onClick={() => setNewQuestData(prev => ({
+                                                                ...prev,
+                                                                category: cat.id,
+                                                                isRecurring: cat.id !== 'TAREFAS'
+                                                            }))}
+                                                            className={`px-4 py-3 rounded-xl font-pixel text-[7px] border flex items-center justify-center gap-2 transition-all ${newQuestData.category === cat.id ? `bg-surface/80 ${cat.border} ${cat.color} shadow-[0_0_15px_rgba(255,255,255,0.05)]` : 'bg-[#161b22] border-transparent text-dim hover:border-white/10'}`}
+                                                        >
+                                                            {cat.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex gap-3 pt-4">
                                             <button
-                                                onClick={() => setShowFailModal(false)}
-                                                className="btn-humiliation"
+                                                type="submit"
+                                                className="btn-primary flex-[2]"
                                             >
-                                                ACEITAR A HUMILHAÇÃO E VOLTAR
+                                                ADICIONAR MISSAO
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowNewQuestModal(false)}
+                                                className="btn-action flex-1"
+                                            >
+                                                CANCELAR
                                             </button>
                                         </div>
-                                    </div>
-                                )
-                            }
-                            {/* New Quest Modal */}
-                            {
-                                showNewQuestModal && (
-                                    <div className="modal-overlay">
-                                        <div className="premium-card modal-card max-w-lg animate-slide-up !bg-[#0d1117] !p-8 !border-blue/30 shadow-[0_0_50px_rgba(0,145,255,0.15)]">
-                                            <div className="flex items-center justify-between mb-8">
-                                                <h2 className="font-pixel text-[10px] flex items-center gap-3 text-blue">
-                                                    <Plus size={20} /> FORJAR NOVA QUEST
-                                                </h2>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowNewQuestModal(false)}
-                                                    className="text-dim hover:text-white transition-colors p-2"
-                                                >
-                                                    <X size={20} />
-                                                </button>
-                                            </div>
-                                            <form onSubmit={addNewQuest} className="space-y-6">
-                                                <div className="space-y-4">
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Título da tarefa..."
-                                                        className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-blue/50 outline-none transition-all font-sans"
-                                                        value={newQuestData.title}
-                                                        onChange={e => setNewQuestData(prev => ({ ...prev, title: e.target.value }))}
-                                                        required
-                                                    />
-
-                                                    <textarea
-                                                        placeholder="Descrição (opcional)"
-                                                        className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-blue/50 outline-none transition-all font-sans min-h-[80px] resize-none"
-                                                        value={newQuestData.desc}
-                                                        onChange={e => setNewQuestData(prev => ({ ...prev, desc: e.target.value }))}
-                                                    />
-
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div className="space-y-2">
-                                                            <label className="font-pixel text-[6px] text-dim uppercase">Data Limite de Entrega</label>
-                                                            <input
-                                                                type="date"
-                                                                className="w-full bg-[#161b22] border-transparent p-3 rounded-xl text-[10px] outline-none font-sans"
-                                                                value={newQuestData.targetDate}
-                                                                onChange={e => setNewQuestData(prev => ({ ...prev, targetDate: e.target.value }))}
-                                                            />
-                                                        </div>
-                                                        <div className="space-y-2">
-                                                            <label className="font-pixel text-[6px] text-dim uppercase">Duração (Min)</label>
-                                                            <input
-                                                                type="number"
-                                                                placeholder="30"
-                                                                className="w-full bg-[#161b22] border-transparent p-3 rounded-xl text-sm outline-none font-sans"
-                                                                value={newQuestData.time}
-                                                                onChange={e => setNewQuestData(prev => ({ ...prev, time: e.target.value }))}
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex items-center justify-between bg-[#161b22] p-4 rounded-xl">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-sm font-sans font-medium">RECORRENTE</span>
-                                                            <span className="text-[8px] font-pixel text-dim">HABITO DIÁRIO</span>
-                                                        </div>
-                                                        <label className="switch relative inline-block w-10 h-6">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={newQuestData.isRecurring}
-                                                                onChange={e => setNewQuestData(prev => ({ ...prev, isRecurring: e.target.checked }))}
-                                                                className="opacity-0 w-0 h-0"
-                                                            />
-                                                            <span className={`slider round absolute cursor-pointer inset-0 bg-[#0d1117] border border-white/10 transition-all rounded-full before:absolute before:content-[''] before:h-4 before:w-4 before:left-1 before:bottom-0.8 before:bg-blue before:transition-all before:rounded-full ${newQuestData.isRecurring ? 'before:translate-x-4 before:!bg-orange !border-orange/30' : ''}`}></span>
-                                                        </label>
-                                                    </div>
-
-                                                    <div className="space-y-4 pt-2">
-                                                        <label className="font-pixel text-[6px] text-dim uppercase">Prioridade da Quest</label>
-                                                        <div className="grid grid-cols-2 gap-2">
-                                                            {[
-                                                                { id: 'Alta', label: 'ALTA', color: 'text-hp-red', border: 'border-hp-red/50' },
-                                                                { id: 'Média', label: 'MÉDIA', color: 'text-orange', border: 'border-orange/50' },
-                                                                { id: 'Normal', label: 'NORMAL', color: 'text-blue', border: 'border-blue/50' },
-                                                                { id: 'Sem prioridade', label: 'SEM PRIORIDADE', color: 'text-dim', border: 'border-white/10' }
-                                                            ].map(p => (
-                                                                <button
-                                                                    key={p.id}
-                                                                    type="button"
-                                                                    onClick={() => setNewQuestData(prev => ({ ...prev, priority: p.id }))}
-                                                                    className={`px-4 py-3 rounded-xl font-pixel text-[7px] border flex items-center justify-center gap-2 transition-all ${newQuestData.priority === p.id ? `bg-surface ${p.border} ${p.color} shadow-[0_0_15px_rgba(255,255,255,0.05)]` : 'bg-[#161b22] border-transparent text-dim hover:border-white/10'}`}
-                                                                >
-                                                                    <Flag size={10} fill={newQuestData.priority === p.id ? 'currentColor' : 'none'} />
-                                                                    {p.label}
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="space-y-4">
-                                                        <div className="flex justify-between items-center">
-                                                            <label className="font-pixel text-[7px] text-dim uppercase">Peso / Esforço</label>
-                                                            <span className="font-pixel text-orange text-sm">{newQuestData.difficulty}</span>
-                                                        </div>
-                                                        <input
-                                                            type="range"
-                                                            min="1"
-                                                            max="10"
-                                                            className="w-full accent-orange"
-                                                            value={newQuestData.difficulty}
-                                                            onChange={e => setNewQuestData(prev => ({ ...prev, difficulty: e.target.value }))}
-                                                        />
-                                                        <div className="flex justify-between font-pixel text-[5px] text-dim">
-                                                            <span>FÁCIL</span>
-                                                            <span>DIFÍCIL</span>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="space-y-4 pt-2">
-                                                        <label className="font-pixel text-[6px] text-dim uppercase">Categoria da Missão</label>
-                                                        <div className="grid grid-cols-2 gap-2">
-                                                            {[
-                                                                { id: 'HÁBITOS', label: 'HÁBITOS', color: 'text-violet', border: 'border-violet/50' },
-                                                                { id: 'TAREFAS', label: 'TAREFAS', color: 'text-blue', border: 'border-blue/50' },
-                                                                { id: 'HIGIENE', label: 'HIGIENE', color: 'text-green-400', border: 'border-green-400/50' },
-                                                                { id: 'DIETA', label: 'DIETA', color: 'text-orange', border: 'border-orange/50' }
-                                                            ].map(cat => (
-                                                                <button
-                                                                    key={cat.id}
-                                                                    type="button"
-                                                                    onClick={() => setNewQuestData(prev => ({
-                                                                        ...prev,
-                                                                        category: cat.id,
-                                                                        isRecurring: cat.id !== 'TAREFAS'
-                                                                    }))}
-                                                                    className={`px-4 py-3 rounded-xl font-pixel text-[7px] border flex items-center justify-center gap-2 transition-all ${newQuestData.category === cat.id ? `bg-surface/80 ${cat.border} ${cat.color} shadow-[0_0_15px_rgba(255,255,255,0.05)]` : 'bg-[#161b22] border-transparent text-dim hover:border-white/10'}`}
-                                                                >
-                                                                    {cat.label}
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex gap-3 pt-4">
-                                                    <button
-                                                        type="submit"
-                                                        className="btn-primary flex-[2]"
-                                                    >
-                                                        ADICIONAR MISSAO
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setShowNewQuestModal(false)}
-                                                        className="btn-action flex-1"
-                                                    >
-                                                        CANCELAR
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                )
-                            }
-
-                            {/* Modal de Nova Refeição */}
-                            {
-                                showNewMealModal && (
-                                    <div className="modal-overlay">
-                                        <div className="premium-card modal-card max-w-lg animate-slide-up">
-                                            <div className="flex items-center justify-between mb-8">
-                                                <h2 className="font-pixel text-[10px] flex items-center gap-3 text-green-400">
-                                                    <Utensils size={20} /> FORJAR ALIMENTO
-                                                </h2>
-                                                <button onClick={() => setShowNewMealModal(false)} className="text-dim hover:text-white transition-colors p-2">
-                                                    <X size={20} />
-                                                </button>
-                                            </div>
-                                            <form onSubmit={addManualMeal} className="space-y-6">
-                                                <div className="space-y-4">
-                                                    <div>
-                                                        <label className="font-pixel text-[6px] text-dim uppercase mb-2 block">Título do Alimento</label>
-                                                        <input
-                                                            type="text"
-                                                            placeholder="Ex: Almoço de Guerreiro"
-                                                            className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-green-500/50 outline-none transition-all font-sans"
-                                                            value={newMealData.title}
-                                                            onChange={e => setNewMealData(prev => ({ ...prev, title: e.target.value }))}
-                                                            required
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="font-pixel text-[6px] text-dim uppercase mb-2 block">Descritivo (Ingredientes)</label>
-                                                        <textarea
-                                                            placeholder="Ex: 200g de frango + 100g de arroz integral"
-                                                            className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-green-500/50 outline-none transition-all font-sans min-h-[100px] resize-none"
-                                                            value={newMealData.desc}
-                                                            onChange={e => setNewMealData(prev => ({ ...prev, desc: e.target.value }))}
-                                                            required
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="font-pixel text-[6px] text-dim uppercase mb-2 block">Horário</label>
-                                                        <input
-                                                            type="time"
-                                                            className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-green-500/50 outline-none transition-all font-sans"
-                                                            value={newMealData.time}
-                                                            onChange={e => setNewMealData(prev => ({ ...prev, time: e.target.value }))}
-                                                            required
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div className="bg-green-500/5 p-4 rounded-xl border border-green-500/20 flex gap-4 items-center">
-                                                    <span className="text-xl">🤖</span>
-                                                    <p className="text-[9px] text-dim italic">A IA calculará automaticamente as calorias baseando-se nos seus ingredientes após salvar.</p>
-                                                </div>
-                                                <button type="submit" className="btn-primary w-full py-4">
-                                                    FORJAR ALIMENTO
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                )
-                            }
-                            {/* Modal de Confirmação de Exclusão */}
-                            {profileToDelete && (
-                                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-                                    <div className="w-full max-w-sm animate-scale-up">
-                                        <div className="premium-card glass border-hp-red/50 text-center p-8">
-                                            <div className="flex justify-center mb-6">
-                                                <div className="w-16 h-16 rounded-full bg-hp-red/10 border border-hp-red/30 flex items-center justify-center text-hp-red animate-pulse">
-                                                    <Skull size={32} />
-                                                </div>
-                                            </div>
-                                            <h3 className="font-pixel text-[10px] text-white mb-4 uppercase tracking-widest leading-relaxed">
-                                                Banir Herói da Guilda?
-                                            </h3>
-                                            <p className="text-[8px] font-pixel text-dim mb-8 leading-relaxed uppercase">
-                                                Esta ação é irreversível. O herói e todo o seu progresso serão perdidos no abismo.
-                                            </p>
-                                            <div className="flex flex-col gap-3">
-                                                <button
-                                                    onClick={confirmDeleteProfile}
-                                                    className="btn-primary !bg-hp-red !border-hp-red !text-white w-full py-4"
-                                                >
-                                                    Confirmar Banimento
-                                                </button>
-                                                <button
-                                                    onClick={() => setProfileToDelete(null)}
-                                                    className="btn-action w-full py-4"
-                                                >
-                                                    Cancelar
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    </form>
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )
+                    }
+
+                    {/* Modal de Nova Refeição */}
+                    {
+                        showNewMealModal && (
+                            <div className="modal-overlay">
+                                <div className="premium-card modal-card max-w-lg animate-slide-up">
+                                    <div className="flex items-center justify-between mb-8">
+                                        <h2 className="font-pixel text-[10px] flex items-center gap-3 text-green-400">
+                                            <Utensils size={20} /> FORJAR ALIMENTO
+                                        </h2>
+                                        <button onClick={() => setShowNewMealModal(false)} className="text-dim hover:text-white transition-colors p-2">
+                                            <X size={20} />
+                                        </button>
+                                    </div>
+                                    <form onSubmit={addManualMeal} className="space-y-6">
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="font-pixel text-[6px] text-dim uppercase mb-2 block">Título do Alimento</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Ex: Almoço de Guerreiro"
+                                                    className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-green-500/50 outline-none transition-all font-sans"
+                                                    value={newMealData.title}
+                                                    onChange={e => setNewMealData(prev => ({ ...prev, title: e.target.value }))}
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="font-pixel text-[6px] text-dim uppercase mb-2 block">Descritivo (Ingredientes)</label>
+                                                <textarea
+                                                    placeholder="Ex: 200g de frango + 100g de arroz integral"
+                                                    className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-green-500/50 outline-none transition-all font-sans min-h-[100px] resize-none"
+                                                    value={newMealData.desc}
+                                                    onChange={e => setNewMealData(prev => ({ ...prev, desc: e.target.value }))}
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="font-pixel text-[6px] text-dim uppercase mb-2 block">Horário</label>
+                                                <input
+                                                    type="time"
+                                                    className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm focus:border-green-500/50 outline-none transition-all font-sans"
+                                                    value={newMealData.time}
+                                                    onChange={e => setNewMealData(prev => ({ ...prev, time: e.target.value }))}
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="bg-green-500/5 p-4 rounded-xl border border-green-500/20 flex gap-4 items-center">
+                                            <span className="text-xl">🤖</span>
+                                            <p className="text-[9px] text-dim italic">A IA calculará automaticamente as calorias baseando-se nos seus ingredientes após salvar.</p>
+                                        </div>
+                                        <button type="submit" className="btn-primary w-full py-4">
+                                            FORJAR ALIMENTO
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        )
+                    }
+                    {/* Redundant profileToDelete modal removed from here to fix JSX structure and address redundancy */}
+                </div>
             </div>
-            </div>
-            );
+        </div>
+    );
 }
