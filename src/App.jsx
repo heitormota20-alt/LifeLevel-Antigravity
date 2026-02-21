@@ -1269,7 +1269,7 @@ function AppContent() {
                                 </div>
                             </nav>
 
-                            <div className="flex-1 p-4 md:p-8 pt-44 pb-40">
+                            <div className="flex-1 p-4 md:p-8 pt-56 pb-40">
                                 <div className="container mx-auto">
                                     <Routes>
                                         <Route path="/Inicio" element={
@@ -1291,10 +1291,10 @@ function AppContent() {
                                                                     setNewQuestData(prev => ({ ...prev, category: 'TAREFAS', isRecurring: false }));
                                                                     setShowNewQuestModal(true);
                                                                 }}
-                                                                className="w-full bg-[#ff6b00] hover:bg-[#ff8533] text-deep font-bold py-5 rounded-2xl flex items-center justify-center gap-3 transition-all mb-12 shadow-lg shadow-orange/20"
+                                                                className="w-full bg-orange hover:bg-orange-light text-deep font-bold py-5 rounded-2xl flex items-center justify-center gap-3 transition-all mb-12 shadow-lg shadow-orange/20"
                                                             >
                                                                 <Plus size={20} className="stroke-[3px]" />
-                                                                <span className="font-pixel text-[10px] tracking-[2px]">NOVA TAREFA</span>
+                                                                <span className="font-pixel text-[12px] tracking-[2px] font-bold">NOVA TAREFA</span>
                                                             </button>
 
                                                             <div className="space-y-4">
@@ -1354,7 +1354,7 @@ function AppContent() {
                                                                             <div
                                                                                 key={q.id}
                                                                                 onClick={() => handleComplete(q.id)}
-                                                                                className={`hoje-task-item !bg-[#0d1117] border-white/5 hover:border-blue/30 ${isDone ? 'opacity-40' : ''}`}
+                                                                                className={`hoje-task-item !bg-card border-white/5 hover:border-blue/30 ${isDone ? 'opacity-40' : ''}`}
                                                                             >
                                                                                 <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${isDone ? 'bg-blue border-blue shadow-[0_0_15px_rgba(0,145,255,0.4)]' : 'border-white/10'}`}>
                                                                                     {isDone && <Check size={16} className="text-deep stroke-[3px]" />}
@@ -1998,7 +1998,7 @@ function AppContent() {
                                                         </div>
                                                     </div>
 
-                                                    <div className="bg-[#161b22] px-8 py-4 rounded-3xl border border-white/5 flex flex-col justify-center min-w-[220px]">
+                                                    <div className="bg-surface px-8 py-4 rounded-3xl border border-white/5 flex flex-col justify-center min-w-[220px]">
                                                         <div className="flex justify-between items-center mb-1">
                                                             <span className="font-pixel text-[6px] text-dim uppercase">Cálculo de TDEE</span>
                                                             <Activity size={10} className="text-green-500 opacity-40" />
@@ -2079,7 +2079,7 @@ function AppContent() {
                                                                 <div
                                                                     key={idx}
                                                                     onClick={() => toggleMeal(idx)}
-                                                                    className={`premium-card !bg-[#0d1117] border-white/5 !p-6 flex flex-col gap-4 relative group hover:border-green-500/30 transition-all overflow-hidden cursor-pointer ${isDone ? 'opacity-30 grayscale-[0.8]' : ''}`}
+                                                                    className={`premium-card !bg-card border-white/5 !p-6 flex flex-col gap-4 relative group hover:border-green-500/30 transition-all overflow-hidden cursor-pointer ${isDone ? 'opacity-30 grayscale-[0.8]' : ''}`}
                                                                 >
                                                                     <div className="flex items-center justify-between z-10">
                                                                         <div className="flex items-center gap-3">
@@ -2243,7 +2243,7 @@ function AppContent() {
                                     {
                                         showNewQuestModal && (
                                             <div className="modal-overlay">
-                                                <div className="premium-card modal-card max-w-lg animate-slide-up !bg-[#0d1117] !p-8 !border-blue/30 shadow-[0_0_50px_rgba(0,145,255,0.15)]">
+                                                <div className="premium-card modal-card max-w-lg animate-slide-up !bg-card !p-8 !border-blue/30 shadow-[0_0_50px_rgba(0,145,255,0.15)]">
                                                     <div className="flex items-center justify-between mb-8">
                                                         <h2 className="font-pixel text-[10px] flex items-center gap-3 text-blue">
                                                             <Plus size={20} /> FORJAR NOVA QUEST
