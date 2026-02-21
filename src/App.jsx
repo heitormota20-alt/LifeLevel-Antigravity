@@ -41,6 +41,8 @@ import {
     Trash2,
     ChevronUp,
     ChevronDown,
+    ChevronLeft,
+    ChevronRight,
     ArrowUpCircle,
     ArrowDownCircle,
     GripVertical,
@@ -1413,18 +1415,21 @@ function AppContent() {
                                         <Route path="/Tarefas" element={
                                             <div className="animate-slide-up pb-24 max-w-5xl mx-auto space-y-8">
                                                 {/* Header com Toggle */}
-                                                <div className="flex items-center justify-between mb-2">
+                                                <div className="flex items-center justify-between mb-4">
                                                     <div>
-                                                        <h2 className="font-pixel text-xl text-bright mb-1 uppercase tracking-tight">Tarefas</h2>
-                                                        <p className="font-pixel text-[8px] text-dim uppercase tracking-widest">Gerencie suas tarefas</p>
+                                                        <h2 className="font-pixel text-2xl text-bright mb-1 uppercase tracking-tight">Tarefas</h2>
+                                                        <p className="font-pixel text-[10px] text-dim uppercase tracking-widest">Gerencie suas tarefas</p>
                                                     </div>
-                                                    <div className="flex items-center bg-surface/40 p-1 rounded-xl border border-white/5">
-                                                        <button className="p-2 bg-orange/10 text-orange rounded-lg shadow-[0_0_15px_rgba(255,107,0,0.2)]">
+                                                    <div className="view-toggle-container">
+                                                        <button
+                                                            onClick={() => navigate('/Tarefas')}
+                                                            className="view-toggle-btn active"
+                                                        >
                                                             <ClipboardList size={18} />
                                                         </button>
                                                         <button
                                                             onClick={() => navigate('/Calendario')}
-                                                            className="p-2 text-dim hover:text-bright transition-colors"
+                                                            className="view-toggle-btn"
                                                         >
                                                             <Calendar size={18} />
                                                         </button>
@@ -1446,28 +1451,18 @@ function AppContent() {
                                                 {/* Filtros */}
                                                 <div className="flex flex-wrap items-center gap-3">
                                                     <div className="flex-1 min-w-[200px] relative">
-                                                        <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-dim" />
+                                                        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-dim" />
                                                         <input
                                                             type="text"
                                                             placeholder="Buscar tarefas..."
-                                                            className="w-full pl-10 pr-4 py-3 bg-surface/30 border border-white/5 rounded-xl text-[10px] font-pixel placeholder:text-dim/50 focus:border-orange/30 outline-none transition-all"
+                                                            className="w-full pl-12 pr-4 py-4 bg-surface/30 border border-white/5 rounded-2xl text-[10px] font-pixel placeholder:text-dim/50 focus:border-orange/30 outline-none transition-all"
                                                         />
                                                     </div>
-                                                    <div className="flex items-center gap-2 px-4 py-3 bg-surface/30 border border-white/5 rounded-xl cursor-not-allowed opacity-80">
-                                                        <span className="font-pixel text-[10px] text-bright uppercase tracking-wider">Hoje</span>
+                                                    <button className="flex items-center gap-3 px-6 py-4 bg-surface/30 border border-white/5 rounded-2xl hover:border-orange/30 transition-all group">
+                                                        <Activity size={16} className="text-dim group-hover:text-orange" />
+                                                        <span className="font-pixel text-[10px] text-dim group-hover:text-bright uppercase">Mais...</span>
                                                         <ChevronDown size={14} className="text-dim" />
-                                                    </div>
-                                                    <div className="flex items-center gap-2 px-4 py-3 bg-surface/30 border border-white/5 rounded-xl cursor-not-allowed opacity-80">
-                                                        <span className="font-pixel text-[10px] text-bright uppercase tracking-wider">Todos status</span>
-                                                        <ChevronDown size={14} className="text-dim" />
-                                                    </div>
-                                                    <div className="p-3 bg-surface/30 border border-white/5 rounded-xl text-dim hover:text-bright transition-colors cursor-pointer">
-                                                        <Activity size={14} />
-                                                    </div>
-                                                    <div className="flex items-center gap-2 px-4 py-3 bg-surface/30 border border-white/5 rounded-xl text-dim hover:text-bright transition-colors cursor-pointer">
-                                                        <span className="font-pixel text-[10px] uppercase tracking-wider">Mais...</span>
-                                                        <ChevronDown size={14} />
-                                                    </div>
+                                                    </button>
                                                 </div>
 
                                                 <div className="pt-12">
@@ -1739,29 +1734,78 @@ function AppContent() {
 
 
                                         <Route path="/Calendario" element={
-                                            <div className="animate-slide-up calendar-container">
-                                                <div className="flex items-center justify-between mb-8 px-4">
+                                            <div className="animate-slide-up pb-24 max-w-5xl mx-auto space-y-8">
+                                                {/* Replicating same header as /Tarefas */}
+                                                <div className="flex items-center justify-between mb-4">
                                                     <div>
-                                                        <h2 className="font-pixel text-[12px] text-orange mb-2">MAPA TEMPORAL</h2>
-                                                        <p className="font-pixel text-[7px] text-dim uppercase tracking-[2px]">Visão Estratégica do Mês</p>
+                                                        <h2 className="font-pixel text-2xl text-bright mb-1 uppercase tracking-tight">Tarefas</h2>
+                                                        <p className="font-pixel text-[10px] text-dim uppercase tracking-widest">Gerencie suas tarefas</p>
                                                     </div>
-                                                    <div className="flex items-center gap-4 bg-surface/30 p-2 rounded-2xl border border-white/5 font-pixel text-[8px]">
+                                                    <div className="view-toggle-container">
                                                         <button
-                                                            onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1))}
-                                                            className="text-dim hover:text-orange text-lg px-2"
-                                                        >‹</button>
-                                                        <span className="uppercase">{calendarDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
+                                                            onClick={() => navigate('/Tarefas')}
+                                                            className="view-toggle-btn"
+                                                        >
+                                                            <ClipboardList size={18} />
+                                                        </button>
                                                         <button
-                                                            onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1))}
-                                                            className="text-dim hover:text-orange text-lg px-2"
-                                                        >›</button>
+                                                            onClick={() => navigate('/Calendario')}
+                                                            className="view-toggle-btn active"
+                                                        >
+                                                            <Calendar size={18} />
+                                                        </button>
                                                     </div>
                                                 </div>
 
-                                                <div className="premium-card !p-4 md:!p-6 !bg-surface/20 border-white/5 overflow-hidden">
+                                                <button
+                                                    onClick={() => {
+                                                        setNewQuestData(prev => ({ ...prev, category: 'TAREFAS', isRecurring: false }));
+                                                        setShowNewQuestModal(true);
+                                                    }}
+                                                    className="w-full bg-orange hover:bg-orange-light text-deep font-pixel py-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-orange/20"
+                                                >
+                                                    <Plus size={20} className="stroke-[3px]" />
+                                                    <span className="text-[10px] font-bold tracking-[2px] uppercase">Nova Tarefa</span>
+                                                </button>
+
+                                                <div className="flex flex-wrap items-center gap-3">
+                                                    <div className="flex-1 min-w-[200px] relative">
+                                                        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-dim" />
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Buscar tarefas..."
+                                                            className="w-full pl-12 pr-4 py-4 bg-surface/30 border border-white/5 rounded-2xl text-[10px] font-pixel placeholder:text-dim/50 focus:border-orange/30 outline-none transition-all"
+                                                        />
+                                                    </div>
+                                                    <button className="flex items-center gap-3 px-6 py-4 bg-surface/30 border border-white/5 rounded-2xl hover:border-orange/30 transition-all group">
+                                                        <Activity size={16} className="text-dim group-hover:text-orange" />
+                                                        <span className="font-pixel text-[10px] text-dim group-hover:text-bright uppercase">Mais...</span>
+                                                        <ChevronDown size={14} className="text-dim" />
+                                                    </button>
+                                                </div>
+
+                                                <div className="calendar-container pt-8">
+                                                    <div className="flex items-center justify-between mb-12">
+                                                        <button
+                                                            onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1))}
+                                                            className="p-2 text-dim hover:text-orange transition-colors"
+                                                        >
+                                                            <ChevronLeft size={24} />
+                                                        </button>
+                                                        <h2 className="font-pixel text-lg text-bright capitalize">
+                                                            {calendarDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+                                                        </h2>
+                                                        <button
+                                                            onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1))}
+                                                            className="p-2 text-dim hover:text-orange transition-colors"
+                                                        >
+                                                            <ChevronRight size={24} />
+                                                        </button>
+                                                    </div>
+
                                                     <div className="calendar-grid-header">
-                                                        {['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'].map(d => (
-                                                            <div key={d} className="text-center font-pixel text-[6px] text-dim opacity-50">{d}</div>
+                                                        {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => (
+                                                            <div key={d} className="text-center font-pixel text-[10px] text-dim uppercase tracking-wider">{d}</div>
                                                         ))}
                                                     </div>
 
@@ -1781,46 +1825,36 @@ function AppContent() {
                                                                 const dateIso = `${currentDayDate.getFullYear()}-${String(currentDayDate.getMonth() + 1).padStart(2, '0')}-${String(currentDayDate.getDate()).padStart(2, '0')}`;
                                                                 const isToday = new Date().toLocaleDateString() === dateKey;
 
-                                                                const hasRecurring = (user.quests || []).some(q => q.isRecurring);
-                                                                const singleQuests = (user.quests || []).filter(q => !q.isRecurring && q.targetDate === dateIso);
+                                                                const dayQuests = (user.quests || []).filter(q =>
+                                                                    (q.category === 'TAREFAS' && q.targetDate === dateIso) ||
+                                                                    (q.isRecurring && (q.completedDates || []).includes(dateKey))
+                                                                );
 
                                                                 days.push(
-                                                                    <div key={d} className={`calendar-day-box ${isToday ? 'is-today' : ''}`}>
-                                                                        <div className={`calendar-day-number ${isToday ? 'text-orange font-bold' : 'text-dim'}`}>
-                                                                            {d}
-                                                                        </div>
-
-                                                                        {hasRecurring && (
-                                                                            <div className="recurrence-flag">
-                                                                                <Flag size={12} fill="currentColor" />
+                                                                    <div
+                                                                        key={d}
+                                                                        onClick={() => {
+                                                                            // Optional: navigate back to list filtered by this day
+                                                                        }}
+                                                                        className={`calendar-day-box ${isToday ? 'is-today' : ''}`}
+                                                                    >
+                                                                        <span className="calendar-day-number">{d}</span>
+                                                                        {dayQuests.length > 0 && (
+                                                                            <div className="flex gap-0.5 justify-center mt-1">
+                                                                                {dayQuests.slice(0, 3).map((_, i) => (
+                                                                                    <div key={i} className={`task-dot ${isToday ? '!bg-deep shadow-none' : ''}`} />
+                                                                                ))}
                                                                             </div>
                                                                         )}
-
-                                                                        <div className="flex flex-col gap-1 overflow-y-auto no-scrollbar flex-1">
-                                                                            {singleQuests.map(q => {
-                                                                                const isDone = (q.completedDates || []).includes(dateKey);
-                                                                                const priorityClass = `calendar-priority-${(q.priority || 'NORMAL').toLowerCase()}`;
-
-                                                                                return (
-                                                                                    <div
-                                                                                        key={q.id}
-                                                                                        onClick={() => handleCalendarQuestClick(q.id)}
-                                                                                        className={`calendar-quest-item ${priorityClass}`}
-                                                                                    >
-                                                                                        <div className={`w-1 h-1 rounded-full shrink-0 ${isDone ? 'bg-green-400' : 'bg-white/40'}`}></div>
-                                                                                        <span className={`calendar-quest-text ${isDone ? 'line-through opacity-50' : ''}`}>
-                                                                                            {q.title}
-                                                                                        </span>
-                                                                                    </div>
-                                                                                );
-                                                                            })}
-                                                                        </div>
-                                                                        {isToday && <div className="absolute bottom-2 right-2 opacity-30"><Zap size={10} className="text-orange" /></div>}
                                                                     </div>
                                                                 );
                                                             }
                                                             return days;
                                                         })()}
+                                                    </div>
+
+                                                    <div className="mt-12 text-left">
+                                                        <span className="font-pixel text-[10px] text-dim uppercase tracking-widest">Hoje</span>
                                                     </div>
                                                 </div>
                                             </div>
