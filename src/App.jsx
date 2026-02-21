@@ -438,6 +438,7 @@ function AppContent() {
     const [isProtocolActive, setIsProtocolActive] = useState(false);
     const [showFailModal, setShowFailModal] = useState(false);
     const [showNewQuestModal, setShowNewQuestModal] = useState(false);
+    const [showInlineTaskForm, setShowInlineTaskForm] = useState(false);
     const [newQuestData, setNewQuestData] = useState({
         title: '',
         desc: '',
@@ -1210,6 +1211,7 @@ function AppContent() {
         }));
 
         setShowNewQuestModal(false);
+        setShowInlineTaskForm(false);
         setNewQuestData({
             title: '',
             desc: '',
@@ -1286,16 +1288,83 @@ function AppContent() {
                                                                 <FileText size={18} className="text-dim" />
                                                                 <h2 className="font-pixel text-[10px] text-bright tracking-[2px] uppercase">Tarefas</h2>
                                                             </div>
-                                                            <button
-                                                                onClick={() => {
-                                                                    setNewQuestData(prev => ({ ...prev, category: 'TAREFAS', isRecurring: false }));
-                                                                    setShowNewQuestModal(true);
-                                                                }}
-                                                                className="w-full bg-orange hover:bg-orange-light text-deep font-bold py-5 rounded-2xl flex items-center justify-center gap-3 transition-all mb-12 shadow-lg shadow-orange/20"
-                                                            >
-                                                                <Plus size={20} className="stroke-[3px]" />
-                                                                <span className="font-pixel text-[12px] tracking-[2px] font-bold">NOVA TAREFA</span>
-                                                            </button>
+                                                            {!showInlineTaskForm ? (
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setNewQuestData(prev => ({ ...prev, category: 'TAREFAS', isRecurring: false }));
+                                                                        setShowInlineTaskForm(true);
+                                                                    }}
+                                                                    className="w-full bg-orange hover:bg-orange-light text-deep font-bold py-5 rounded-2xl flex items-center justify-center gap-3 transition-all mb-12 shadow-lg shadow-orange/20"
+                                                                >
+                                                                    <Plus size={20} className="stroke-[3px]" />
+                                                                    <span className="font-pixel text-[12px] tracking-[2px] font-bold">NOVA TAREFA</span>
+                                                                </button>
+                                                            ) : (
+                                                                <div className="premium-card !bg-card !p-6 border-orange/50 border-2 mb-12 animate-slide-up">
+                                                                    <form onSubmit={addNewQuest} className="space-y-4">
+                                                                        <input
+                                                                            type="text"
+                                                                            placeholder="Título da tarefa..."
+                                                                            className="w-full bg-[#0d1117] border-2 border-orange/30 p-4 rounded-xl text-sm font-sans focus:border-orange outline-none transition-all text-bright"
+                                                                            value={newQuestData.title}
+                                                                            onChange={e => setNewQuestData(prev => ({ ...prev, title: e.target.value }))}
+                                                                            autoFocus
+                                                                            required
+                                                                        />
+                                                                        <input
+                                                                            placeholder="Descrição (opcional)"
+                                                                            className="w-full bg-[#161b22] border-transparent p-4 rounded-xl text-sm font-sans focus:border-orange/50 outline-none transition-all text-bright"
+                                                                            value={newQuestData.desc}
+                                                                            onChange={e => setNewQuestData(prev => ({ ...prev, desc: e.target.value }))}
+                                                                        />
+
+                                                                        <div className="flex items-center gap-3">
+                                                                            <button type="button" className="px-5 py-2.5 bg-surface text-dim font-pixel text-[10px] rounded-xl border border-white/5 flex items-center gap-2">
+                                                                                <Calendar size={14} /> Hoje
+                                                                            </button>
+                                                                            <button type="button" className="px-5 py-2.5 bg-surface text-dim font-pixel text-[10px] rounded-xl border border-white/5 flex items-center justify-between min-w-[120px]">
+                                                                                <span>Sem...</span>
+                                                                                <ChevronDown size={14} />
+                                                                            </button>
+                                                                        </div>
+
+                                                                        <div className="space-y-4 pt-2">
+                                                                            <div className="flex justify-between items-center">
+                                                                                <span className="font-pixel text-[10px] text-dim uppercase">Peso / Esforço</span>
+                                                                                <span className="font-pixel text-orange text-lg">{newQuestData.difficulty}</span>
+                                                                            </div>
+                                                                            <input
+                                                                                type="range"
+                                                                                min="1"
+                                                                                max="10"
+                                                                                className="w-full accent-orange"
+                                                                                value={newQuestData.difficulty}
+                                                                                onChange={e => setNewQuestData(prev => ({ ...prev, difficulty: e.target.value }))}
+                                                                            />
+                                                                            <div className="flex justify-between font-pixel text-[8px] text-dim">
+                                                                                <span>Fácil</span>
+                                                                                <span>Difícil</span>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div className="flex gap-3 pt-2">
+                                                                            <button
+                                                                                type="submit"
+                                                                                className="flex-[3] bg-orange hover:bg-orange-light text-deep font-bold py-4 rounded-xl transition-all font-pixel text-[10px] uppercase tracking-widest"
+                                                                            >
+                                                                                Adicionar
+                                                                            </button>
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => setShowInlineTaskForm(false)}
+                                                                                className="flex-1 bg-surface hover:bg-white/5 text-bright font-bold py-4 rounded-xl transition-all border border-white/10 font-pixel text-[10px] uppercase tracking-widest"
+                                                                            >
+                                                                                Cancelar
+                                                                            </button>
+                                                                        </div>
+                                                                    </form>
+                                                                </div>
+                                                            )}
 
                                                             <div className="space-y-4">
                                                                 {user.quests.filter(q => q.category === 'TAREFAS').length === 0 ? (
